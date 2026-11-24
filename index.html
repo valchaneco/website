@@ -366,6 +366,7 @@
   :root[data-theme="dark"] .contact h2{color:#ECE8E1}
   .stage.failed:not(.ready) .fallback{display:grid}
   .copy-email{cursor:pointer}
+  :root[data-theme="dark"] .help-card .tags li{background:#34343A;color:#ECE8E1;border-color:#34343A}
 </style>
 </head>
 <body id="top">
@@ -638,7 +639,7 @@
     const btn = document.querySelector('.sound-toggle'); if (!btn) return;
     const SR = 44100, LEN = 30, FADE = 3;
     const players = [new Audio(), new Audio()];
-    players.forEach(p => { p.preload = 'auto'; p.addEventListener('timeupdate', tick); });
+    players.forEach(p => { p.preload = 'auto'; p.addEventListener('timeupdate', tick); p.addEventListener('ended', () => { if (on && players[cur] === p) { p.currentTime = 0; p.play().catch(() => {}); } }); });
     let cur = 0, on = false, ready = null, timer, vfade;
     function render() {
       const N = SR * LEN, F = SR * FADE, OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
@@ -691,8 +692,11 @@
       set(true);
       if (!players[0].src) await prep();
       players.forEach(p => { try { p.volume = 1; } catch (e) {} });
-      const p = players[cur];
-      try { if (!p.currentTime || p.ended) p.currentTime = 0; await p.play(); }
+      const p = players[cur], q = players[1 - cur];
+      // Phones only let a player start later if it was started once during a tap,
+      // so briefly start and stop the second player now, silently.
+      if (!q._unlocked) { q.muted = true; q.play().then(() => { q.pause(); q.currentTime = 0; q.muted = false; q._unlocked = true; }).catch(() => { q.muted = false; }); }
+      try { if (!p.currentTime || p.ended) p.currentTime = 0; await p.play(); p._unlocked = true; }
       catch (e) { console.warn('noise', e); set(false); return; }
       timer = setInterval(tick, 200);
     });
