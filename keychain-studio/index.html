@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&display=swap">
 <style>
 [hidden] { display: none !important; }
 /* Layout: an editor. A tall, pinned 3D stage on the left with "who am I editing" pills on top of it; a tabbed tool rail on the right (stage pins to the top on phones, tools scroll below) */
@@ -15,8 +15,8 @@
   --accent: #E8634F;
   --stage: #E2E8EC;
   --chip: rgba(255, 255, 255, .86);
-  --display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
-  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --body: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -79,7 +79,7 @@ header p { margin: 0; color: var(--muted); font-size: 14px; }
 .editing { display: grid; gap: 2px; }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .editing strong { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.2; }
-.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; background: var(--bg); border-radius: 11px; padding: 3px; }
+.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; background: var(--bg); border-radius: 11px; padding: 3px; }
 .tab { font: 500 12.5px/1.1 var(--body); color: var(--muted); background: none; border: 0; border-radius: 8px; padding: 8px 4px; cursor: pointer; }
 .tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 .panel { overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; min-height: 0; display: grid; gap: 16px; align-content: start; padding: 5px 8px 5px 5px; margin: -5px -4px -5px -5px; grid-template-columns: minmax(0, 1fr); }
@@ -217,18 +217,45 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px 
       <div class="panel" id="panel-metal" role="tabpanel" hidden>
         <div class="sec" id="chain-sec">
           <div class="sec-head"><span class="eyebrow">Chain</span></div>
-          <div class="seg seg3">
-            <button class="pill" type="button" id="chain-metal">Metal</button>
+          <div class="seg">
+            <button class="pill" type="button" id="chain-both">Chain + ring</button>
             <button class="pill" type="button" id="chain-printed">Printed chain</button>
             <button class="pill" type="button" id="chain-ring">Printed ring</button>
+            <button class="pill" type="button" id="chain-metal">Metal</button>
           </div>
           <p class="desc" id="chain-desc"></p>
+        </div>
+        <div class="sec" id="pc-sec">
+          <div class="sec-head"><span class="eyebrow">Printed chain and ring color</span><span id="pc-name">Matches the keychain</span></div>
+          <div class="pills"><button class="pill" type="button" id="pc-match"><span class="dot" id="pc-match-dot"></span><span>Match keychain</span></button></div>
+        </div>
+        <div class="sec" id="pc-solid-sec">
+          <div class="sec-head"><span class="eyebrow">Solid colors</span></div>
+          <div class="swatches" id="pc-solids"></div>
+        </div>
+        <div class="sec" id="pc-deep-sec">
+          <div class="sec-head"><span class="eyebrow">Deep tones</span><span>As dark as navy</span></div>
+          <div class="swatches" id="pc-deeps"></div>
+        </div>
+        <div class="sec" id="pc-wheel-sec">
+          <div class="sec-head"><span class="eyebrow">Color wheel</span></div>
+          <div class="custom">
+            <input type="color" id="pc-color" value="#8b5e3c" aria-label="Pick any color for the chain and ring">
+            <input type="text" id="pc-hex" value="#8B5E3C" maxlength="7" aria-label="Chain and ring hex color code" spellcheck="false">
+            <button class="btn" type="button" id="pc-apply">Apply</button>
+          </div>
+        </div>
+        <div class="sec" id="pc-fin-sec">
+          <div class="sec-head"><span class="eyebrow">Chain and ring finish</span></div>
+          <div class="pills" id="pc-finishes"></div>
+          <p class="desc">Gradients and patterns stay on the keychain: the chain and ring are printed in one filament.</p>
         </div>
         <div class="sec" id="metal-sec">
           <div class="sec-head"><span class="eyebrow">Ring and chain finish</span><span id="metal-scope">All three</span></div>
           <div class="pills" id="metals"></div>
         </div>
         <label class="toggle" id="hw-row"><input type="checkbox" id="hw" checked> Show ring and chain</label>
+        <label class="toggle" id="swing-row"><input type="checkbox" id="swing"> Gentle swing</label>
         <p class="desc" id="ring-note" hidden>The sitting versions are shown resting on a table. They still have the loop on top, so a ring and chain can be added if you want to hang one.</p>
       </div>
 
@@ -240,7 +267,6 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px 
             <button class="pill" type="button" id="show-one" aria-pressed="false">Selected only</button>
           </div>
         </div>
-        <label class="toggle"><input type="checkbox" id="swing"> Gentle swing</label>
         <div class="sec">
           <div class="sec-head"><span class="eyebrow">Size</span></div>
           <p class="desc" id="spec-desc"></p>
@@ -340,7 +366,7 @@ const PRODUCTS = [
   { id: "key", name: "Key", count: 1, file: "key_print", mode: "hang", look: { c: "#F1F1EC", finish: "satin" },
     spec: "The key is 89 × 30 × 3.4 mm (3.5 × 1.2 × 0.13 in) with a 6 mm hanging hole, and prints flat with no supports. Solid (opaque) filament.",
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.5" r="4.5"/><circle cx="12" cy="5.5" r="1.2"/><path d="M12 11v10l-1.5-1.5M12 14h-2M12 17h-1.5"/></svg>' },
-  { id: "cheese", name: "Cheese", count: 1, file: "cheese_keychain", mode: "free", look: { c: "#F5A623", finish: "glossy" },
+  { id: "cheese", name: "Cheese", count: 1, file: "cheese_keychain", mode: "hang", look: { c: "#F5A623", finish: "glossy" },
     spec: "The cheese is 76 × 36 × 3 mm (3.0 × 1.4 × 0.1 in) with 12 holes for clips and rings. Prints flat with no supports. Translucent orange PETG gives the glossy, glowing look.",
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="7" width="19" height="10" rx="2"/><circle cx="7" cy="10.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="17" cy="10.5" r="1"/></svg>' },
   { id: "clip", name: "Triangle clip", count: 1, file: "triangle_clip", mode: "free", look: { c: "#E8622A", finish: "matte" },
@@ -361,15 +387,23 @@ const count = () => curProduct().count;
 if (!VERSIONS.some(v => v.id === state.version)) state.version = "sit";
 const curVersion = () => VERSIONS.find(v => v.id === state.version);
 const curMode = () => isOcto() ? curVersion().mode : curProduct().mode;
+// The sitting styles stand on the table with a loop on top; the ring and chain start from the loop's hole
+const SIT_LOOPS = { sit: { y: 39.25, z: 0.38 }, up: { y: 31.0, z: 0.3 } };
+const sitLoop = () => isOcto() ? SIT_LOOPS[state.version] || null : null;
+const hwOnSit = () => !!sitLoop();
 const KEY_VARIANTS = [
   { id: "plain", name: "Standard", file: "key_print", spec: PRODUCTS[1].spec },
   { id: "nfc", name: "NFC tag inside", file: "key_print_nfc",
     spec: "Same key, 89 × 30 × 3.4 mm (3.5 × 1.2 × 0.13 in), with a 25 mm NFC tag (NTAG215 coin) sealed inside the round head. The printer pauses at 2.4 mm, the tag drops in, and the print closes over it, so nothing shows on the outside." },
 ];
 if (!state.keyVariant || !KEY_VARIANTS.some(v => v.id === state.keyVariant)) state.keyVariant = "plain";
-if (!state.chain) state.chain = "metal";
+if (!state.chain) state.chain = "both";
+// printed chain and ring color, kept separately for each tab
+if (!state.pcBy || typeof state.pcBy !== "object") state.pcBy = {};
+delete state.pcLook;
+const pcL = () => state.pcBy[state.product] || (state.pcBy[state.product] = { c: null, finish: null });
 const curKeyVariant = () => KEY_VARIANTS.find(v => v.id === state.keyVariant);
-const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ looks: state.looksBy.octopus, looksBy: state.looksBy, metal: state.metal, custom: state.custom, version: state.version, product: state.product, keyVariant: state.keyVariant, chain: state.chain })); } catch (e) {} };
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ looks: state.looksBy.octopus, looksBy: state.looksBy, metal: state.metal, custom: state.custom, version: state.version, product: state.product, keyVariant: state.keyVariant, chain: state.chain, pcBy: state.pcBy })); } catch (e) {} };
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const targetIdx = () => count() === 1 ? [0] : state.target === "all" ? [0, 1, 2] : [MODELS.findIndex(m => m.id === state.target)];
 const cssFill = l => l.g ? `linear-gradient(180deg, ${l.g.join(", ")})` : l.c;
@@ -404,6 +438,7 @@ KEY_VARIANTS.forEach(v => {
 $("chain-metal").addEventListener("click", () => { state.chain = "metal"; save(); syncUI(); layout(true); });
 $("chain-printed").addEventListener("click", () => { state.chain = "printed"; save(); syncUI(); applyLooks(); layout(true); });
 $("chain-ring").addEventListener("click", () => { state.chain = "ring"; save(); syncUI(); applyLooks(); layout(true); });
+$("chain-both").addEventListener("click", () => { state.chain = "both"; save(); syncUI(); applyLooks(); layout(true); });
 const targetsEl = $("targets");
 [{ id: "all", name: "All three" }, ...MODELS].forEach((m, i) => {
   const b = el("button", { type: "button", className: "target", id: "target-" + m.id });
@@ -451,6 +486,22 @@ METALS.forEach(m => {
   b.addEventListener("click", () => { state.metal = m.id; commit(); });
   $("metals").append(b);
 });
+const pcSet = patch => { state.pcBy[state.product] = Object.assign({}, pcL(), patch); commit(); };
+[[SOLIDS, "pc-solids", "pcs-"], [DEEP, "pc-deeps", "pcd-"]].forEach(([list, box, pre]) => list.forEach(([n, c]) => {
+  const b = el("button", { type: "button", className: "swatch", title: n, id: pre + n.replace(/\s/g, "-") });
+  b.style.background = c; b.setAttribute("aria-label", n + " chain and ring");
+  b.addEventListener("click", () => pcSet({ c }));
+  $(box).append(b);
+}));
+$("pc-match").addEventListener("click", () => { state.pcBy[state.product] = { c: null, finish: null }; commit(); });
+$("pc-color").addEventListener("input", e => { $("pc-hex").value = e.target.value.toUpperCase(); pcSet({ c: e.target.value }); });
+$("pc-apply").addEventListener("click", () => { const v = $("pc-hex").value.trim(); const h = v.startsWith("#") ? v : "#" + v; if (/^#[0-9a-f]{6}$/i.test(h)) { $("pc-color").value = h.toLowerCase(); pcSet({ c: h }); } });
+FINISHES.forEach(f => {
+  const b = el("button", { type: "button", className: "pill", id: "pcf-" + f.id }, `<span>${f.name}</span>`);
+  b.addEventListener("click", () => pcSet({ finish: f.id, c: pcL().c || pcBase() }));
+  $("pc-finishes").append(b);
+});
+function pcBase() { const l = state.looks[targetIdx()[0]] || state.looks[0]; return l.g ? l.g[0] : l.c; }
 MODELS.forEach((m, i) => $("set-" + m.id).addEventListener("input", e => {
   state.looks[i] = { c: e.target.value, finish: state.looks[i].finish };
   commit();
@@ -468,7 +519,7 @@ $("custom-apply").addEventListener("click", () => setLook({ c: state.custom }));
 ["color", "finish", "metal", "scene"].forEach(t => $("tab-" + t).addEventListener("click", () => { state.tab = t; syncUI(); }));
 $("show-all").addEventListener("click", () => { state.show = "all"; syncUI(); layout(false); });
 $("show-one").addEventListener("click", () => { state.show = "one"; if (state.target === "all") state.target = "see"; syncUI(); layout(false); });
-$("hw").addEventListener("change", e => { state.hw = e.target.checked; layout(true); });
+$("hw").addEventListener("change", e => { state.hw = e.target.checked; syncUI(); layout(true); });
 $("swing").addEventListener("change", e => { state.swing = e.target.checked; });
 $("recenter").addEventListener("click", () => layout(false));
 $("reset").addEventListener("click", () => {
@@ -497,12 +548,26 @@ function syncUI() {
   $("chain-metal").setAttribute("aria-pressed", String(state.chain === "metal"));
   $("chain-printed").setAttribute("aria-pressed", String(state.chain === "printed"));
   $("chain-ring").setAttribute("aria-pressed", String(state.chain === "ring"));
+  $("chain-both").setAttribute("aria-pressed", String(state.chain === "both"));
   $("metal-sec").hidden = state.chain !== "metal";
+  ["pc-sec", "pc-solid-sec", "pc-deep-sec", "pc-wheel-sec", "pc-fin-sec"].forEach(id => $(id).hidden = state.chain === "metal");
+  { const pc = pcL().c ? pcL().c.toLowerCase() : null;
+    SOLIDS.forEach(([n, hex]) => $("pcs-" + n.replace(/\s/g, "-")).setAttribute("aria-pressed", String(pc === hex.toLowerCase())));
+    DEEP.forEach(([n, hex]) => $("pcd-" + n.replace(/\s/g, "-")).setAttribute("aria-pressed", String(pc === hex.toLowerCase())));
+    $("pc-match").setAttribute("aria-pressed", String(!pc));
+    $("pc-match-dot").style.background = cssFill(state.looks[0]);
+    const named = [...SOLIDS, ...DEEP].find(([, hex]) => hex.toLowerCase() === pc);
+    $("pc-name").textContent = !pc ? "Matches the keychain" : named ? named[0] : pc.toUpperCase();
+    const pf = pcL().c ? (pcL().finish || null) : null;
+    FINISHES.forEach(x => $("pcf-" + x.id).setAttribute("aria-pressed", String(pf ? pf === x.id : false)));
+    if (pc) { $("pc-color").value = pc; $("pc-hex").value = pc.toUpperCase(); } }
   $("metal-scope").textContent = octo ? "All three" : "";
-  $("chain-desc").textContent = state.chain === "ring"
-    ? "A simple round ring, 28 mm across, printed in the same filament as the keychain. It has a diagonal split like the triangle clip: flex the ends apart, slide on the keychain or your keys, and let it spring back. The 2.6 mm band fits through the octopus loops, the key hole and the printed chain. PETG springs back best."
+  $("chain-desc").textContent = state.chain === "both"
+    ? "The full printed set: the 6-link chain on the keychain and the 28 mm round ring on top, all in filament. They match the keychain unless you pick their own color below. This is how the print files go together."
+    : state.chain === "ring"
+    ? "A simple round ring, 28 mm across, printed in filament: it matches the keychain unless you pick its own color below. It has a diagonal split like the triangle clip: flex the ends apart, slide on the keychain or your keys, and let it spring back. The 2.6 mm band fits through the octopus loops, the key hole and the printed chain. PETG springs back best."
     : state.chain === "printed"
-    ? "Printed in the same filament as the keychain, so it always matches. It prints as one piece with the 6 links already linked, about 55 mm long with a fine 1.6 mm wire, and the end links have a small opening to slide onto the keychain and your keyring. Fine for keys; PETG is a little tougher than PLA."
+    ? "Printed in filament: it matches the keychain unless you pick its own color below. It prints as one piece with the 6 links already linked, about 55 mm long with a fine 1.6 mm wire, and the end links have a small opening to slide onto the keychain and your keyring. Fine for keys; PETG is a little tougher than PLA."
     : "A metal jump ring, short chain and 25 mm split ring.";
   $("set-see").closest(".sec").hidden = !octo; $("sets").closest(".sec").hidden = !octo; $("show-all").closest(".sec").hidden = !octo;
   $("editing-name").textContent = !octo ? curProduct().name : state.target === "all" ? "All three" : MODELS[idx[0]].name;
@@ -511,6 +576,9 @@ function syncUI() {
     MODELS.forEach((m, i) => { $("tdot-" + m.id).style.background = cssFill(state.looks[i]); });
     $("tdots-all").innerHTML = state.looks.map(l => `<span class="dot" style="background:${cssFill(l)}"></span>`).join("");
   }
+  const solo = curMode() === "free";          // round ring and triangle clip are shown on their own
+  $("tab-metal").hidden = solo; $("swing-row").hidden = !(curMode() === "hang" || (sitLoop() && state.hw));
+  if (solo && state.tab === "metal") state.tab = "color";
   ["color", "finish", "metal", "scene"].forEach(t => { $("tab-" + t).setAttribute("aria-selected", String(state.tab === t)); $("panel-" + t).hidden = state.tab !== t; });
   const same = (fn) => { const v = idx.map(i => fn(state.looks[i])); return new Set(v).size === 1 ? v[0] : null; };
   const c = same(l => l.c ? l.c.toLowerCase() : null), g = same(l => l.g ? l.g.join() : null), f = same(l => l.finish);
@@ -524,7 +592,7 @@ function syncUI() {
   $("show-one").setAttribute("aria-pressed", String(state.show === "one"));
   updateSolidName();
   VERSIONS.forEach(v => $("ver-" + v.id).setAttribute("aria-pressed", String(state.version === v.id)));
-  const hangV = curMode() === "hang";
+  const hangV = curMode() === "hang" || hwOnSit();
   $("hw-row").hidden = !hangV; $("ring-note").hidden = hangV;
   $("ring-note").textContent = octo ? "The sitting versions are shown resting on a table. They still have the loop on top, so a ring and chain can be added if you want to hang one."
     : state.product === "cheese" ? "The cheese is shown on its own. Any of its 12 holes can take a ring, clip or carabiner, like in your photo."
@@ -627,6 +695,9 @@ function makePrintedChain(mat) {
 // 3D printed round ring, same size as round_ring.stl: 28 mm across, 2.6 mm band, with a small gap where the split is
 const PR = { R: 12.7, r: 1.25 };
 PR.CY = PR.R + 0.3; const TOP_RING = PR.CY + PR.R + PR.r;
+// chain + ring: the ring hangs through the top link of the chain
+const RING_ON_CHAIN = TOP_PRINTED - 2 * PC.R - 0.6, TOP_BOTH = RING_ON_CHAIN + TOP_RING;
+const hwTop = () => state.chain === "printed" ? TOP_PRINTED : state.chain === "ring" ? TOP_RING : state.chain === "both" ? TOP_BOTH : TOP_WITH_HW;
 function makePrintedRing(mat) {
   const g = new THREE.TorusGeometry(PR.R, PR.r, 24, 160, Math.PI * 2 - 0.07);
   g.rotateZ(Math.PI + 0.035);
@@ -706,15 +777,16 @@ versionGeos(state.version).then(geos => {
     };
     const mesh = new THREE.Mesh(smooth, mat); mesh.castShadow = true; mesh.userData.idx = i;
     const hw = makeHardware();
-    const pc = makePrintedChain(mat); pc.visible = false;
-    const pr = makePrintedRing(mat); pr.visible = false;
+    const pmat = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+    const pc = makePrintedChain(pmat); pc.visible = false;
+    const pr = makePrintedRing(pmat); pr.visible = false;
     const sticker = new THREE.Group(); sticker.visible = false;
     const disc = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.25, 64), stickerMat); disc.rotation.x = Math.PI / 2;
     const coil = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.035, 8, 64), stickerRingMat);
     sticker.add(disc, coil);
     const pivot = new THREE.Group(); const body = new THREE.Group();
     body.add(mesh, hw, pc, pr, sticker); pivot.add(body); scene.add(pivot);
-    items.push({ pivot, body, hw, pc, pr, sticker, mat, mesh, phase: i * 1.7 });
+    items.push({ pivot, body, hw, pc, pr, sticker, mat, pmat, mesh, phase: i * 1.7 });
   });
   $("loading").remove();
   if (!isOcto()) setProduct(state.product); else { applyLooks(); layout(false); }
@@ -805,19 +877,20 @@ function applyLooks() {
   metal.color.set(m.color); metal.roughness = m.rough; metal.metalness = m.metal;
   items.forEach((it, i) => {
     const l = state.looks[i]; if (!l) return;
-    const c = new THREE.Color(l.g ? l.g[0] : "#ffffff");
-    [it.pc, it.pr].forEach(g => {
-      const ca = g.userData.geo.attributes.color;
-      for (let k = 0; k < ca.count; k++) ca.setXYZ(k, c.r, c.g, c.b);
-      ca.needsUpdate = true;
-    });
+    const pl = pcL(), own = pl.c;
+    const col = own ? pl.c : (l.g ? l.g[0] : l.c);
+    const fin = own ? (pl.finish || l.finish) : l.finish;
+    Object.assign(it.pmat, { clearcoatRoughness: 0.6 }, FINISHES.find(f => f.id === fin)?.m || FINISHES[1].m);
+    it.pmat.vertexColors = false; it.pmat.color.set(col);
+    if (it.pmat.transmission > 0) { it.pmat.attenuationColor.copy(it.pmat.color); it.pmat.attenuationDistance = fin === "clear" ? 30 : 16; }
+    it.pmat.needsUpdate = true;
   });
 }
 
 function layout(keepAngle) {
   if (!items.length) return;
   const mode = curMode(), hang = mode === "hang", free = mode === "free";
-  const top = hang ? (state.hw ? (state.chain === "printed" ? TOP_PRINTED : state.chain === "ring" ? TOP_RING : TOP_WITH_HW) : TOP_NO_HW) : 0;
+  const top = hang ? (state.hw ? hwTop() : TOP_NO_HW) : 0;
   const gap = hang ? 56 : mode === "sit" ? 60 : 50;
   const show = count() === 1 ? [0] : state.show === "all" ? [0, 1, 2] : targetIdx();
   const bb = items[0].mesh.geometry.boundingBox, size = new THREE.Vector3(), ctr = new THREE.Vector3();
@@ -825,9 +898,12 @@ function layout(keepAngle) {
   items.forEach((it, i) => {
     const k = show.indexOf(i);
     it.pivot.visible = k >= 0;
-    it.hw.visible = hang && state.hw && state.chain === "metal";
-    it.pc.visible = hang && state.hw && state.chain === "printed";
-    it.pr.visible = hang && state.hw && state.chain === "ring";
+    const loop = sitLoop(), on = (hang || !!loop) && state.hw;
+    it.hw.visible = on && state.chain === "metal";
+    it.pc.visible = on && (state.chain === "printed" || state.chain === "both");
+    it.pr.visible = on && (state.chain === "ring" || state.chain === "both");
+    [it.hw, it.pc, it.pr].forEach(g => g.position.set(0, loop ? loop.y : 0, loop ? loop.z : 0));
+    if (state.chain === "both") it.pr.position.y += RING_ON_CHAIN;
     const kv = curKeyVariant();
     it.sticker.visible = i === 0 && state.product === "key" && !!kv.pocketR;
     if (it.sticker.visible) {
@@ -841,8 +917,9 @@ function layout(keepAngle) {
   });
   backdrop.visible = !(mode === "sit"); floor.visible = mode === "sit";
   let w = show.length * gap, h = hang ? top + 46 : mode === "sit" ? 52 : 44, cy = hang ? (top - 40) / 2 + 2 : mode === "sit" ? 22 : 16;
-  if (count() === 1 && hang) { w = Math.max(size.x, 30) + 10; h = top + (-bb.min.y) + 6; cy = (top + bb.min.y) / 2; }
+  if (count() === 1 && hang) { w = Math.max(size.x, 30) + 10; h = top + (-bb.min.y) + 14; cy = (top + bb.min.y) / 2; }
   if (free) { w = size.x + 10; h = size.y + 10; cy = 0; }
+  if (sitLoop() && state.hw) { const L = sitLoop(), tt = hwTop(); h = L.y + tt + 8; cy = (L.y + tt) / 2; }
   const fov = THREE.MathUtils.degToRad(camera.fov);
   const dist = Math.max((h / 2) / Math.tan(fov / 2), (w / 2) / Math.tan(fov / 2) / camera.aspect) * (hang ? 1.14 : 1.22);
   const dir = keepAngle ? camera.position.clone().sub(controls.target).normalize()
@@ -878,8 +955,16 @@ const clock = new THREE.Clock();
 function tick() {
   const t = clock.getElapsedTime();
   items.forEach(it => {
-    const target = state.swing && !reduceMotion && curMode() === "hang" ? Math.sin(t * 1.6 + it.phase) * 0.06 : 0;
-    it.pivot.rotation.z += (target - it.pivot.rotation.z) * 0.08;
+    const sway = state.swing && !reduceMotion ? Math.sin(t * 1.6 + it.phase) : 0;
+    const hangSwing = curMode() === "hang" ? sway * 0.06 : 0;
+    it.pivot.rotation.z += (hangSwing - it.pivot.rotation.z) * 0.08;
+    // sitting octopuses stay put; only the ring and chain sway from the loop
+    const sitSwing = sitLoop() ? sway * 0.12 : 0;
+    [it.hw, it.pc, it.pr].forEach(g => { g.rotation.z += (sitSwing - g.rotation.z) * 0.08; });
+    if (state.chain === "both") {   // keep the ring on the top link while the chain sways
+      const L = sitLoop() || { y: 0, z: 0 }, r = it.pc.rotation.z;
+      it.pr.position.set(-Math.sin(r) * RING_ON_CHAIN, L.y + Math.cos(r) * RING_ON_CHAIN, L.z);
+    }
   });
   controls.update();
   renderer.render(scene, camera);
