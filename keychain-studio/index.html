@@ -1,0 +1,888 @@
+<title>Keychain Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+[hidden] { display: none !important; }
+/* Layout: an editor. A tall, pinned 3D stage on the left with "who am I editing" pills on top of it; a tabbed tool rail on the right (stage pins to the top on phones, tools scroll below) */
+:root {
+  --bg: #EDF1F3;
+  --surface: #FFFFFF;
+  --ink: #18232A;
+  --muted: #5C6B74;
+  --line: #D3DCE1;
+  --accent: #E8634F;
+  --stage: #E2E8EC;
+  --chip: rgba(255, 255, 255, .86);
+  --display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F161A; --surface: #172127; --ink: #E8EEF1; --muted: #93A3AC;
+    --line: #2A3740; --accent: #F2806C; --stage: #1A242A; --chip: rgba(23, 33, 39, .86); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F161A; --surface: #172127; --ink: #E8EEF1; --muted: #93A3AC;
+  --line: #2A3740; --accent: #F2806C; --stage: #1A242A; --chip: rgba(23, 33, 39, .86); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.5; }
+.wrap {
+  max-width: 1240px; margin: 0 auto; display: grid; gap: 14px;
+  padding-block: 18px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.15; margin: 0; }
+header p { margin: 0; color: var(--muted); font-size: 14px; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+
+/* stage */
+.stage {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  background: var(--stage); border-radius: 18px; overflow: hidden; touch-action: none;
+  height: calc(100vh - 36px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); max-height: 860px; min-height: 420px;
+}
+.stage canvas { display: block; width: 100%; height: 100%; outline: none; cursor: grab; }
+.ptabs { display: flex; flex-wrap: wrap; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px; justify-self: start; max-width: 100%; }
+.ptab { display: inline-flex; align-items: center; gap: 8px; font: 600 14px/1 var(--body); color: var(--muted); background: none; border: 0; border-radius: 10px; padding: 10px 16px; cursor: pointer; }
+.ptab svg { width: 18px; height: 18px; flex: none; }
+.ptab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+@media (max-width: 520px) { .ptab { padding: 9px 11px; font-size: 13px; } }
+.versions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.versions .lbl { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.ver { font: 500 13px/1 var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 13px; cursor: pointer; }
+.ver[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.targets { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 1; }
+.target {
+  display: inline-flex; align-items: center; gap: 7px; font: 500 13px/1 var(--body); color: var(--ink);
+  background: var(--chip); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 11px 7px 8px; cursor: pointer;
+}
+.target[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.target .dot { width: 14px; height: 14px; }
+.hint { position: absolute; left: 14px; bottom: 12px; font-size: 12px; color: var(--muted); pointer-events: none; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; }
+.stage-actions { position: absolute; right: 12px; bottom: 10px; display: flex; gap: 6px; }
+
+/* tool rail */
+.rail {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  max-height: min(860px, calc(100vh - 36px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-width: 0;
+}
+.editing { display: grid; gap: 2px; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.editing strong { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.2; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; background: var(--bg); border-radius: 11px; padding: 3px; }
+.tab { font: 500 12.5px/1.1 var(--body); color: var(--muted); background: none; border: 0; border-radius: 8px; padding: 8px 4px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.panel { overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; min-height: 0; display: grid; gap: 16px; align-content: start; padding: 5px 8px 5px 5px; margin: -5px -4px -5px -5px; grid-template-columns: minmax(0, 1fr); }
+.sec { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
+.sec-head span:last-child { font-size: 12px; color: var(--muted); }
+.swatches { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 7px; }
+.swatch {
+  aspect-ratio: 1; width: 100%; border-radius: 50%; border: 1px solid rgba(0,0,0,.16); cursor: pointer; padding: 0;
+  position: relative;
+}
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.seg.seg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.setpick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.setpick label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; cursor: pointer; min-width: 0; }
+.setpick input[type="color"] { width: 28px; height: 24px; flex: none; border: 1px solid var(--line); border-radius: 6px; padding: 1px; background: var(--surface); cursor: pointer; }
+.pills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.pill span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.pill {
+  display: flex; align-items: center; gap: 8px; font: 500 13px/1.2 var(--body); color: var(--ink); text-align: left;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; cursor: pointer; min-width: 0;
+}
+.pill[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.dot { width: 16px; height: 16px; border-radius: 50%; flex: none; border: 1px solid rgba(0,0,0,.16); }
+.dot.wide { width: 30px; border-radius: 8px; }
+.dots { display: inline-flex; flex: none; }
+.dots .dot + .dot { margin-left: -6px; }
+.metal { background-image: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,0) 45%, rgba(0,0,0,.25)); }
+.custom { display: flex; align-items: center; gap: 8px; }
+.custom input[type="color"] { width: 40px; height: 32px; border: 1px solid var(--line); border-radius: 8px; padding: 2px; background: var(--surface); cursor: pointer; }
+.custom input[type="text"] {
+  flex: 1; min-width: 0; font: 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; text-transform: uppercase;
+}
+details { font-size: 12px; color: var(--muted); }
+details summary { cursor: pointer; }
+details p { margin: 6px 0 0; line-height: 1.45; }
+.desc { font-size: 12px; color: var(--muted); margin: 0; }
+.toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.toggle input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.btn {
+  font: 500 13px/1 var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 9px; padding: 8px 11px; cursor: pointer;
+}
+.stage-actions .btn { background: var(--chip); backdrop-filter: blur(6px); }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 12px; color: var(--muted); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .stage { top: env(safe-area-inset-top, 0px); z-index: 2; height: 46vh; min-height: 280px; box-shadow: 0 8px 18px -12px rgba(0,0,0,.35); }
+  .rail { position: static; max-height: none; }
+  .panel { overflow: visible; }
+  .target { padding: 6px 9px 6px 7px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Keychain Studio</h1>
+    <p id="lede">Pick a design, then style it. Every tab keeps its own look.</p>
+  </header>
+  <nav class="ptabs" id="ptabs" role="tablist" aria-label="Choose a design"></nav>
+  <div class="versions" id="versions" role="group" aria-label="Choose a version"></div>
+  <div class="versions" id="variants" role="group" aria-label="Choose a key style" hidden></div>
+  <div class="app">
+    <div class="stage" id="stage">
+      <div class="targets" id="targets" role="group" aria-label="Choose which octopus to edit"></div>
+      <div class="loading" id="loading">Loading models…</div>
+      <div class="hint">Drag to rotate · Scroll to zoom</div>
+      <div class="stage-actions"><button class="btn" type="button" id="recenter">Re-center</button></div>
+    </div>
+
+    <aside class="rail">
+      <div class="editing">
+        <span class="eyebrow">Editing</span>
+        <strong id="editing-name">All three</strong>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" type="button" id="tab-color" aria-selected="true">Color</button>
+        <button class="tab" role="tab" type="button" id="tab-finish" aria-selected="false">Finish</button>
+        <button class="tab" role="tab" type="button" id="tab-metal" aria-selected="false">Ring</button>
+        <button class="tab" role="tab" type="button" id="tab-scene" aria-selected="false">Scene</button>
+      </div>
+
+      <div class="panel" id="panel-color" role="tabpanel">
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Solid colors</span><span id="solid-name"></span></div>
+          <div class="swatches" id="solids"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Deep tones</span><span id="deep-name">As dark as navy</span></div>
+          <div class="swatches" id="deeps"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Color wheel</span></div>
+          <div class="custom">
+            <input type="color" id="custom-color" value="#8b5e3c" aria-label="Pick any color">
+            <input type="text" id="custom-hex" value="#8B5E3C" maxlength="7" aria-label="Hex color code" spellcheck="false">
+            <button class="btn" type="button" id="custom-apply">Apply</button>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Gradients and patterns</span><span>Dark head, paler tips</span></div>
+          <div class="pills" id="gradients"></div>
+          <details>
+            <summary>Can gradients be printed?</summary>
+            <p>Yes. These are based on real species, which are darkest on the head and paler toward the tentacle tips. That top-to-bottom fade suits printing well: printed upright, a multi-color printer can switch from a darker to a lighter filament partway down and place each band exactly. Gradient filament also works, though you may see only two or three shades on a piece this small. For the smoothest fade, paint or airbrush it after printing.</p>
+          </details>
+        </div>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Build your own set</span><span>One color each</span></div>
+          <div class="setpick">
+            <label><input type="color" id="set-see" value="#f2735e" aria-label="See no evil color"><span>See</span></label>
+            <label><input type="color" id="set-hear" value="#2f5fc4" aria-label="Hear no evil color"><span>Hear</span></label>
+            <label><input type="color" id="set-speak" value="#f2735e" aria-label="Speak no evil color"><span>Speak</span></label>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Mixed sets</span><span>Styles all three</span></div>
+          <div class="pills" id="sets"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-finish" role="tabpanel" hidden>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Filament finish</span></div>
+          <div class="pills" id="finishes"></div>
+          <p class="desc" id="finish-desc"></p>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-metal" role="tabpanel" hidden>
+        <div class="sec" id="chain-sec">
+          <div class="sec-head"><span class="eyebrow">Chain</span></div>
+          <div class="seg seg3">
+            <button class="pill" type="button" id="chain-metal">Metal</button>
+            <button class="pill" type="button" id="chain-printed">Printed chain</button>
+            <button class="pill" type="button" id="chain-ring">Printed ring</button>
+          </div>
+          <p class="desc" id="chain-desc"></p>
+        </div>
+        <div class="sec" id="metal-sec">
+          <div class="sec-head"><span class="eyebrow">Ring and chain finish</span><span id="metal-scope">All three</span></div>
+          <div class="pills" id="metals"></div>
+        </div>
+        <label class="toggle" id="hw-row"><input type="checkbox" id="hw" checked> Show ring and chain</label>
+        <p class="desc" id="ring-note" hidden>The sitting versions are shown resting on a table. They still have the loop on top, so a ring and chain can be added if you want to hang one.</p>
+      </div>
+
+      <div class="panel" id="panel-scene" role="tabpanel" hidden>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Show</span></div>
+          <div class="seg">
+            <button class="pill" type="button" id="show-all" aria-pressed="true">All three</button>
+            <button class="pill" type="button" id="show-one" aria-pressed="false">Selected only</button>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="swing"> Gentle swing</label>
+        <div class="sec">
+          <div class="sec-head"><span class="eyebrow">Size</span></div>
+          <p class="desc" id="spec-desc"></p>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>Colors are approximate.</span>
+        <button class="btn" type="button" id="reset">Reset look</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
+
+const MODELS = [
+  { id: "see", name: "See no evil", file: "see.stl.txt" },
+  { id: "hear", name: "Hear no evil", file: "hear.stl.txt" },
+  { id: "speak", name: "Speak no evil", file: "speak.stl.txt" },
+];
+const SOLIDS = [
+  ["Coral", "#F2735E"], ["Red", "#C8302F"], ["Orange", "#F28C28"], ["Yellow", "#F5C431"],
+  ["Sand", "#D9C4A0"], ["Brown", "#7B5034"], ["Pink", "#F4A6C6"], ["Lavender", "#A98BD9"],
+  ["Purple", "#7D4BC2"], ["Sky blue", "#6FB7E8"], ["Royal blue", "#2F5FC4"], ["Deep blue", "#1B3A8C"], ["Navy", "#1E2D5A"],
+  ["Teal", "#1F9A9A"], ["Mint", "#7BCFA6"], ["Green", "#4CAF6A"], ["Olive", "#7D8B3A"],
+  ["White", "#F1F1EC"], ["Light grey", "#B9BDC2"], ["Grey", "#80858C"], ["Black", "#26262A"],
+];
+// Deep tones: every color matched to navy's darkness (relative luminance about 0.03 to 0.05)
+const DEEP = [
+  ["Navy", "#1E2D5A"], ["Midnight", "#14365E"], ["Indigo", "#2B2466"], ["Plum", "#4A1F52"],
+  ["Aubergine", "#42214A"], ["Burgundy", "#5E1A2A"], ["Oxblood", "#5E2019"], ["Rust", "#5C2711"],
+  ["Chocolate", "#4E2E1E"], ["Deep gold", "#4F3D0E"], ["Olive", "#333A19"], ["Forest", "#183E28"],
+  ["Emerald", "#0B4132"], ["Deep teal", "#0E3E47"], ["Slate", "#2E3A48"], ["Charcoal", "#2E3034"],
+];
+// Real species: darkest on the head (mantle), fading paler toward the tentacle tips
+const GRADIENTS = [
+  ["Common octopus", ["#7A3526", "#8C3B2A", "#B5643F", "#D9A27A", "#EED7BE"]],
+  ["Giant Pacific", ["#8E2418", "#A52E1F", "#C8452C", "#E07D57", "#F2B796"]],
+  ["Caribbean reef", ["#245F5C", "#2E6F6A", "#4E9A8E", "#8CC7B4", "#DCEFE5"]],
+  ["Day octopus", ["#4E3354", "#5B3A5E", "#86566A", "#B98A86", "#E6CDBF"]],
+  ["Coconut octopus", ["#3E271D", "#4A2E22", "#6E4A33", "#A07C58", "#D9C2A0"]],
+  ["Dumbo octopus", ["#D98C88", "#E3A39C", "#EDBDB4", "#F6D9D1", "#FBEDE8"]],
+  ["Speckled octopus", ["#6E2E1F", "#8A3D27", "#A9583A", "#CF9670"], true],
+  ["Black to white", ["#1E1F22", "#55575B", "#A9ABAE", "#F4F4F1"]],
+  ["Deep blue to white", ["#1B3A8C", "#3D5FAE", "#97AEDB", "#F3F5FA"]],
+];
+const SETS = [
+  ["Coral & blue", ["#F2735E", "#2F5FC4", "#F2735E"]],
+  ["Mixed blues", ["#6FB7E8", "#2F5FC4", "#1E2D5A"]],
+  ["Coral, teal, lilac", ["#F2735E", "#1F9A9A", "#A98BD9"]],
+  ["Earth tones", ["#C9A27A", "#7B5034", "#80858C"]],
+];
+const FINISHES = [
+  { id: "matte", name: "Matte", desc: "Flat, chalky look with no shine. Hides layer lines well.", m: { roughness: 0.82, clearcoat: 0, metalness: 0, sheen: 0.15, transmission: 0 } },
+  { id: "satin", name: "Standard", desc: "Regular PLA: a soft sheen, the most common finish.", m: { roughness: 0.5, clearcoat: 0.15, clearcoatRoughness: 0.6, metalness: 0, sheen: 0.3, transmission: 0 } },
+  { id: "glossy", name: "Glossy", desc: "Shiny and smooth, like PETG or a resin print with a clear coat.", m: { roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.12, metalness: 0, sheen: 0, transmission: 0 } },
+  { id: "silk", name: "Silk", desc: "Silk PLA has a pearly, almost metallic shine that catches the light.", m: { roughness: 0.3, clearcoat: 0.35, clearcoatRoughness: 0.3, metalness: 0.38, sheen: 0.6, transmission: 0 } },
+  { id: "clear", name: "Clear", desc: "Glass-like and see-through, tinted by the color you pick. Best from clear resin, which can be polished or clear-coated to stay crystal clear. White or a pale tint looks most like glass.", m: { roughness: 0.02, clearcoat: 1, clearcoatRoughness: 0.03, metalness: 0, sheen: 0, transmission: 1, thickness: 4, ior: 1.45, specularIntensity: 1 } },
+  { id: "frosted", name: "Frosted", desc: "Translucent and soft, letting light glow through like sea glass. This is what clear PETG or translucent PLA looks like straight off a regular printer.", m: { roughness: 0.5, clearcoat: 0.2, clearcoatRoughness: 0.5, metalness: 0, sheen: 0, transmission: 0.92, thickness: 3, ior: 1.45, specularIntensity: 1 } },
+];
+const METALS = [
+  { id: "silver", name: "Silver", color: "#D9DBE0", rough: 0.2, metal: 1 },
+  { id: "gold", name: "Gold", color: "#E3BE63", rough: 0.24, metal: 1 },
+  { id: "rose", name: "Rose gold", color: "#E8A68A", rough: 0.24, metal: 1 },
+  { id: "gunmetal", name: "Gunmetal", color: "#5A5D64", rough: 0.3, metal: 1 },
+  { id: "black", name: "Matte black", color: "#202125", rough: 0.62, metal: 0.45 },
+];
+const DEFAULT_LOOK = () => ({
+  looks: [{ c: "#F2735E", finish: "satin" }, { c: "#2F5FC4", finish: "satin" }, { c: "#F2735E", finish: "satin" }],
+  metal: "silver",
+});
+
+const STORE = "keychain-studio-v1";
+let saved = null;
+try { saved = JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { saved = null; }
+const VERSIONS = [
+  { id: "flat", name: "Flat keychain", mode: "hang", spec: "Each keychain is 44 × 44 × 8 mm (1.7 × 1.7 × 0.3 in), flat-backed, so it prints with no supports. Hardware shown: 8 mm jump ring, short chain, 25 mm split ring." },
+  { id: "full", name: "Full body", mode: "hang", spec: "Each keychain is 44 × 44 × 20 mm (1.7 × 1.7 × 0.8 in), sculpted all the way around. Print with supports, or in resin. Hardware shown: 8 mm jump ring, short chain, 25 mm split ring." },
+  { id: "sit", name: "Sitting", mode: "sit", spec: "Each figure is 49 × 45 × 48 mm (1.9 × 1.8 × 1.9 in), with the legs coiled into a flat base and a 6.75 mm loop on top for the round ring or chain. Prints standing up, with light supports under the chin and arms. An NFC version hides a 25 mm tag in the base, sealed in during the print." },
+  { id: "up", name: "Tips up", mode: "sit", spec: "Each figure is 43 × 36 × 42 mm (1.7 × 1.4 × 1.6 in), sitting with the tentacle tips curled upward. Prints standing up, with light supports under the chin and arms." },
+];
+const PRODUCTS = [
+  { id: "octopus", name: "Octopus", count: 3,
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 11a6 6 0 0 1 12 0c0 2-1 3-2 4"/><path d="M8 15c-1 1-1 4-3 5M12 15v6M16 15c1 1 1 4 3 5M10 15c0 2-1 4-2 5M14 15c0 2 1 4 2 5"/><circle cx="10" cy="10" r=".8" fill="currentColor"/><circle cx="14" cy="10" r=".8" fill="currentColor"/></svg>' },
+  { id: "key", name: "Key", count: 1, file: "key_print", mode: "hang", look: { c: "#F1F1EC", finish: "satin" },
+    spec: "The key is 89 × 30 × 3.4 mm (3.5 × 1.2 × 0.13 in) with a 6 mm hanging hole, and prints flat with no supports. Solid (opaque) filament.",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.5" r="4.5"/><circle cx="12" cy="5.5" r="1.2"/><path d="M12 11v10l-1.5-1.5M12 14h-2M12 17h-1.5"/></svg>' },
+  { id: "cheese", name: "Cheese", count: 1, file: "cheese_keychain", mode: "free", look: { c: "#F5A623", finish: "glossy" },
+    spec: "The cheese is 76 × 36 × 3 mm (3.0 × 1.4 × 0.1 in) with 12 holes for clips and rings. Prints flat with no supports. Translucent orange PETG gives the glossy, glowing look.",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="7" width="19" height="10" rx="2"/><circle cx="7" cy="10.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="17" cy="10.5" r="1"/></svg>' },
+  { id: "clip", name: "Triangle clip", count: 1, file: "triangle_clip", mode: "free", look: { c: "#E8622A", finish: "matte" },
+    spec: "The clip is 72 × 67 × 8 mm (2.8 × 2.6 × 0.3 in). The diagonal split in one side flexes apart to hook things on. Print it in PETG for the best spring. Prints flat with no supports.",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 5h14l-7 14z"/></svg>' },
+  { id: "ring", name: "Round ring", count: 1, file: "printed_ring", mode: "free", look: { c: "#F1F1EC", finish: "satin" },
+    spec: "The ring is 28 mm (1.1 in) across with a 2.6 mm band, 2.4 mm thick. Like the triangle clip, it has a diagonal split: flex the ends apart to slide on a keychain or keys, and it springs closed. The band fits through the octopus loops and the key holes. Prints flat with no supports; PETG springs back best.",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="7.5"/></svg>' },
+];
+const state = Object.assign({ target: "all", tab: "color", show: "all", hw: true, swing: false, custom: "#8B5E3C", version: "sit", product: "octopus" }, DEFAULT_LOOK(), saved || {});
+state.looksBy = Object.assign({}, Object.fromEntries(PRODUCTS.filter(p => p.look).map(p => [p.id, [{ ...p.look }]])), state.looksBy || {});
+state.looksBy.octopus = state.looks;
+if (!PRODUCTS.some(p => p.id === state.product)) state.product = "octopus";
+state.looks = state.looksBy[state.product];
+const curProduct = () => PRODUCTS.find(p => p.id === state.product);
+const isOcto = () => state.product === "octopus";
+const count = () => curProduct().count;
+if (!VERSIONS.some(v => v.id === state.version)) state.version = "sit";
+const curVersion = () => VERSIONS.find(v => v.id === state.version);
+const curMode = () => isOcto() ? curVersion().mode : curProduct().mode;
+const KEY_VARIANTS = [
+  { id: "plain", name: "Standard", file: "key_print", spec: PRODUCTS[1].spec },
+  { id: "nfc", name: "NFC tag inside", file: "key_print_nfc",
+    spec: "Same key, 89 × 30 × 3.4 mm (3.5 × 1.2 × 0.13 in), with a 25 mm NFC tag (NTAG215 coin) sealed inside the round head. The printer pauses at 2.4 mm, the tag drops in, and the print closes over it, so nothing shows on the outside." },
+];
+if (!state.keyVariant || !KEY_VARIANTS.some(v => v.id === state.keyVariant)) state.keyVariant = "plain";
+if (!state.chain) state.chain = "metal";
+const curKeyVariant = () => KEY_VARIANTS.find(v => v.id === state.keyVariant);
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ looks: state.looksBy.octopus, looksBy: state.looksBy, metal: state.metal, custom: state.custom, version: state.version, product: state.product, keyVariant: state.keyVariant, chain: state.chain })); } catch (e) {} };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const targetIdx = () => count() === 1 ? [0] : state.target === "all" ? [0, 1, 2] : [MODELS.findIndex(m => m.id === state.target)];
+const cssFill = l => l.g ? `linear-gradient(180deg, ${l.g.join(", ")})` : l.c;
+const nameOf = l => l.g ? (GRADIENTS.find(g => g[1].join() === l.g.join()) || ["Gradient"])[0]
+  : ([...SOLIDS, ...DEEP].find(s => s[1].toLowerCase() === l.c.toLowerCase()) || [l.c.toUpperCase()])[0];
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+function el(tag, props = {}, html = "") { const e = document.createElement(tag); Object.assign(e, props); if (html) e.innerHTML = html; return e; }
+
+const ptabsEl = $("ptabs");
+PRODUCTS.forEach(p => {
+  const b = el("button", { type: "button", className: "ptab", id: "ptab-" + p.id }, `${p.icon}<span>${p.name}</span>`);
+  b.setAttribute("role", "tab");
+  b.addEventListener("click", () => { if (state.product !== p.id) setProduct(p.id); });
+  ptabsEl.append(b);
+});
+const versionsEl = $("versions");
+versionsEl.append(el("span", { className: "lbl" }, "Version"));
+VERSIONS.forEach(v => {
+  const b = el("button", { type: "button", className: "ver", id: "ver-" + v.id, textContent: v.name });
+  b.addEventListener("click", () => { if (state.version !== v.id) setVersion(v.id); });
+  versionsEl.append(b);
+});
+const variantsEl = $("variants");
+variantsEl.append(el("span", { className: "lbl" }, "Style"));
+KEY_VARIANTS.forEach(v => {
+  const b = el("button", { type: "button", className: "ver", id: "var-" + v.id, textContent: v.name });
+  b.addEventListener("click", () => { if (state.keyVariant !== v.id) { state.keyVariant = v.id; setProduct("key"); } });
+  variantsEl.append(b);
+});
+$("chain-metal").addEventListener("click", () => { state.chain = "metal"; save(); syncUI(); layout(true); });
+$("chain-printed").addEventListener("click", () => { state.chain = "printed"; save(); syncUI(); applyLooks(); layout(true); });
+$("chain-ring").addEventListener("click", () => { state.chain = "ring"; save(); syncUI(); applyLooks(); layout(true); });
+const targetsEl = $("targets");
+[{ id: "all", name: "All three" }, ...MODELS].forEach((m, i) => {
+  const b = el("button", { type: "button", className: "target", id: "target-" + m.id });
+  b.innerHTML = m.id === "all" ? `<span class="dots" id="tdots-all"></span>${m.name}` : `<span class="dot" id="tdot-${m.id}"></span>${m.name}`;
+  b.addEventListener("click", () => select(m.id));
+  targetsEl.append(b);
+});
+SOLIDS.forEach(([n, c]) => {
+  const b = el("button", { type: "button", className: "swatch", title: n, id: "solid-" + n.replace(/\s/g, "-") });
+  b.style.background = c; b.setAttribute("aria-label", n);
+  b.addEventListener("click", () => setLook({ c }));
+  b.addEventListener("mouseenter", () => { $("solid-name").textContent = n; });
+  b.addEventListener("mouseleave", () => updateSolidName());
+  $("solids").append(b);
+});
+DEEP.forEach(([n, c]) => {
+  const b = el("button", { type: "button", className: "swatch", title: n, id: "deep-" + n.replace(/\s/g, "-") });
+  b.style.background = c; b.setAttribute("aria-label", n);
+  b.addEventListener("click", () => setLook({ c }));
+  b.addEventListener("mouseenter", () => { $("deep-name").textContent = n; });
+  b.addEventListener("mouseleave", () => { $("deep-name").textContent = "As dark as navy"; });
+  $("deeps").append(b);
+});
+const SPECKLE_CSS = "radial-gradient(circle at 22% 38%, #F2DEC4 0 2px, transparent 2.6px), radial-gradient(circle at 62% 62%, #F2DEC4 0 1.6px, transparent 2.2px), radial-gradient(circle at 80% 30%, #F2DEC4 0 1.3px, transparent 1.9px), radial-gradient(circle at 44% 24%, #3A1A12 0 1.1px, transparent 1.6px), radial-gradient(circle at 36% 72%, #3A1A12 0 1px, transparent 1.5px), ";
+GRADIENTS.forEach(([n, g, sp]) => {
+  const b = el("button", { type: "button", className: "pill", id: "grad-" + n.replace(/\s/g, "-") },
+    `<span class="dot wide" style="background:${sp ? SPECKLE_CSS : ""}linear-gradient(90deg, ${g.join(", ")})"></span><span>${n}</span>`);
+  b.addEventListener("click", () => setLook({ g, speckle: !!sp }));
+  $("gradients").append(b);
+});
+SETS.forEach(([n, cs]) => {
+  const b = el("button", { type: "button", className: "pill" },
+    `<span class="dots">${[...new Set(cs)].map(c => `<span class="dot" style="background:${c}"></span>`).join("")}</span><span>${n}</span>`);
+  b.addEventListener("click", () => { cs.forEach((c, i) => { state.looks[i] = { ...state.looks[i], c, g: undefined }; delete state.looks[i].g; }); state.target = "all"; commit(); });
+  $("sets").append(b);
+});
+FINISHES.forEach(f => {
+  const b = el("button", { type: "button", className: "pill", id: "finish-" + f.id }, `<span>${f.name}</span>`);
+  b.addEventListener("click", () => { targetIdx().forEach(i => state.looks[i].finish = f.id); commit(); });
+  $("finishes").append(b);
+});
+METALS.forEach(m => {
+  const b = el("button", { type: "button", className: "pill", id: "metal-" + m.id },
+    `<span class="dot metal" style="background-color:${m.color}"></span><span>${m.name}</span>`);
+  b.addEventListener("click", () => { state.metal = m.id; commit(); });
+  $("metals").append(b);
+});
+MODELS.forEach((m, i) => $("set-" + m.id).addEventListener("input", e => {
+  state.looks[i] = { c: e.target.value, finish: state.looks[i].finish };
+  commit();
+}));
+document.querySelectorAll(".panel").forEach(p => p.addEventListener("scroll", () => { if (p.scrollLeft) p.scrollLeft = 0; }));
+const hexOk = v => /^#[0-9a-f]{6}$/i.test(v);
+$("custom-color").value = state.custom.toLowerCase(); $("custom-hex").value = state.custom.toUpperCase();
+$("custom-color").addEventListener("input", e => { state.custom = e.target.value; $("custom-hex").value = e.target.value.toUpperCase(); setLook({ c: e.target.value }); });
+$("custom-hex").addEventListener("change", e => {
+  let v = e.target.value.trim(); if (!v.startsWith("#")) v = "#" + v;
+  if (hexOk(v)) { state.custom = v; $("custom-color").value = v.toLowerCase(); setLook({ c: v }); e.target.value = v.toUpperCase(); }
+  else e.target.value = state.custom.toUpperCase();
+});
+$("custom-apply").addEventListener("click", () => setLook({ c: state.custom }));
+["color", "finish", "metal", "scene"].forEach(t => $("tab-" + t).addEventListener("click", () => { state.tab = t; syncUI(); }));
+$("show-all").addEventListener("click", () => { state.show = "all"; syncUI(); layout(false); });
+$("show-one").addEventListener("click", () => { state.show = "one"; if (state.target === "all") state.target = "see"; syncUI(); layout(false); });
+$("hw").addEventListener("change", e => { state.hw = e.target.checked; layout(true); });
+$("swing").addEventListener("change", e => { state.swing = e.target.checked; });
+$("recenter").addEventListener("click", () => layout(false));
+$("reset").addEventListener("click", () => {
+  if (isOcto()) { const d = DEFAULT_LOOK(); state.looks = state.looksBy.octopus = d.looks; state.metal = d.metal; }
+  else { state.looks = state.looksBy[state.product] = [{ ...curProduct().look }]; }
+  commit();
+});
+
+function select(id) { state.target = id; if (state.show === "one" && id === "all") state.show = "all"; syncUI(); if (state.show === "one") layout(false); }
+function setLook(look) {
+  targetIdx().forEach(i => { const f = state.looks[i].finish; state.looks[i] = look.g ? { g: look.g, speckle: !!look.speckle, finish: f } : { c: look.c, finish: f }; });
+  commit();
+}
+function commit() { save(); syncUI(); applyLooks(); }
+function updateSolidName() {
+  const ls = targetIdx().map(i => nameOf(state.looks[i]));
+  $("solid-name").textContent = new Set(ls).size === 1 ? ls[0] : "Mixed";
+}
+function syncUI() {
+  const idx = targetIdx();
+  const octo = isOcto();
+  PRODUCTS.forEach(p => $("ptab-" + p.id).setAttribute("aria-selected", String(state.product === p.id)));
+  $("versions").hidden = !octo; $("targets").hidden = !octo;
+  $("variants").hidden = state.product !== "key";
+  KEY_VARIANTS.forEach(v => $("var-" + v.id).setAttribute("aria-pressed", String(state.keyVariant === v.id)));
+  $("chain-metal").setAttribute("aria-pressed", String(state.chain === "metal"));
+  $("chain-printed").setAttribute("aria-pressed", String(state.chain === "printed"));
+  $("chain-ring").setAttribute("aria-pressed", String(state.chain === "ring"));
+  $("metal-sec").hidden = state.chain !== "metal";
+  $("metal-scope").textContent = octo ? "All three" : "";
+  $("chain-desc").textContent = state.chain === "ring"
+    ? "A simple round ring, 28 mm across, printed in the same filament as the keychain. It has a diagonal split like the triangle clip: flex the ends apart, slide on the keychain or your keys, and let it spring back. The 2.6 mm band fits through the octopus loops, the key hole and the printed chain. PETG springs back best."
+    : state.chain === "printed"
+    ? "Printed in the same filament as the keychain, so it always matches. It prints as one piece with the 6 links already linked, about 55 mm long with a fine 1.6 mm wire, and the end links have a small opening to slide onto the keychain and your keyring. Fine for keys; PETG is a little tougher than PLA."
+    : "A metal jump ring, short chain and 25 mm split ring.";
+  $("set-see").closest(".sec").hidden = !octo; $("sets").closest(".sec").hidden = !octo; $("show-all").closest(".sec").hidden = !octo;
+  $("editing-name").textContent = !octo ? curProduct().name : state.target === "all" ? "All three" : MODELS[idx[0]].name;
+  if (octo) {
+    ["all", ...MODELS.map(m => m.id)].forEach(id => $("target-" + id).setAttribute("aria-pressed", String(state.target === id)));
+    MODELS.forEach((m, i) => { $("tdot-" + m.id).style.background = cssFill(state.looks[i]); });
+    $("tdots-all").innerHTML = state.looks.map(l => `<span class="dot" style="background:${cssFill(l)}"></span>`).join("");
+  }
+  ["color", "finish", "metal", "scene"].forEach(t => { $("tab-" + t).setAttribute("aria-selected", String(state.tab === t)); $("panel-" + t).hidden = state.tab !== t; });
+  const same = (fn) => { const v = idx.map(i => fn(state.looks[i])); return new Set(v).size === 1 ? v[0] : null; };
+  const c = same(l => l.c ? l.c.toLowerCase() : null), g = same(l => l.g ? l.g.join() : null), f = same(l => l.finish);
+  SOLIDS.forEach(([n, hex]) => $("solid-" + n.replace(/\s/g, "-")).setAttribute("aria-pressed", String(c === hex.toLowerCase())));
+  DEEP.forEach(([n, hex]) => $("deep-" + n.replace(/\s/g, "-")).setAttribute("aria-pressed", String(c === hex.toLowerCase())));
+  GRADIENTS.forEach(([n, gs]) => $("grad-" + n.replace(/\s/g, "-")).setAttribute("aria-pressed", String(g === gs.join())));
+  FINISHES.forEach(x => $("finish-" + x.id).setAttribute("aria-pressed", String(f === x.id)));
+  $("finish-desc").textContent = f ? FINISHES.find(x => x.id === f).desc : "These pieces have different finishes. Pick one to match them.";
+  METALS.forEach(m => $("metal-" + m.id).setAttribute("aria-pressed", String(state.metal === m.id)));
+  $("show-all").setAttribute("aria-pressed", String(state.show === "all"));
+  $("show-one").setAttribute("aria-pressed", String(state.show === "one"));
+  updateSolidName();
+  VERSIONS.forEach(v => $("ver-" + v.id).setAttribute("aria-pressed", String(state.version === v.id)));
+  const hangV = curMode() === "hang";
+  $("hw-row").hidden = !hangV; $("ring-note").hidden = hangV;
+  $("ring-note").textContent = octo ? "The sitting versions are shown resting on a table. They still have the loop on top, so a ring and chain can be added if you want to hang one."
+    : state.product === "cheese" ? "The cheese is shown on its own. Any of its 12 holes can take a ring, clip or carabiner, like in your photo."
+    : state.product === "ring" ? "The ring is shown on its own. It is also on this tab for the octopuses and the key: choose Printed ring above to see it holding them."
+    : "The clip is shown on its own, since it is the ring. Hook keys, pouches or other keychains through it.";
+  $("spec-desc").textContent = octo ? curVersion().spec : state.product === "key" ? curKeyVariant().spec : curProduct().spec;
+  if (octo) MODELS.forEach((m, i) => { const l = state.looks[i]; if (l.c && hexOk(l.c)) $("set-" + m.id).value = l.c.toLowerCase(); });
+}
+syncUI();
+
+// ---------- Scene ----------
+const stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(28, 4 / 3, 1, 3000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.enablePan = false;
+controls.minDistance = 50; controls.maxDistance = 900;
+
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(-60, 120, 160); key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -140, right: 140, top: 140, bottom: -140, near: 10, far: 500 });
+key.shadow.radius = 6; key.shadow.bias = -0.0005;
+const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(80, 90, -180);
+scene.add(key, fill, new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.38));
+const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.16 }));
+backdrop.position.z = -24; backdrop.receiveShadow = true; scene.add(backdrop);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.22 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; floor.receiveShadow = true; floor.visible = false; scene.add(floor);
+
+function setBackground() {
+  renderer.setClearColor(new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--stage").trim() || "#E2E8EC"), 1);
+}
+setBackground();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", setBackground);
+new MutationObserver(setBackground).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// hardware, in mm, with the jump-ring hole at the origin
+const metal = new THREE.MeshStandardMaterial({ color: 0xd9dbe0, metalness: 1, roughness: 0.2, envMapIntensity: 1.5 });
+function stadium(L, W) {
+  const r = W / 2, s = (L - W) / 2, pts = [];
+  for (let i = 0; i <= 16; i++) { const a = Math.PI * i / 16; pts.push(new THREE.Vector3(r * Math.cos(a), s + r * Math.sin(a), 0)); }
+  for (let i = 0; i <= 16; i++) { const a = Math.PI + Math.PI * i / 16; pts.push(new THREE.Vector3(r * Math.cos(a), -s + r * Math.sin(a), 0)); }
+  return new THREE.CatmullRomCurve3(pts, true);
+}
+class Helix extends THREE.Curve {
+  constructor(R, turns, pitch) { super(); this.R = R; this.turns = turns; this.pitch = pitch; }
+  getPoint(t, out = new THREE.Vector3()) {
+    const a = -Math.PI / 2 + 0.35 + t * this.turns * Math.PI * 2;
+    return out.set(-this.pitch / 2 + this.pitch * t, this.R * Math.sin(a), this.R * Math.cos(a));
+  }
+}
+const linkGeo = new THREE.TubeGeometry(stadium(7, 3.6), 96, 0.5, 12, true);
+const ringGeo = new THREE.TubeGeometry(new Helix(12, 1.9, 1.5), 400, 0.75, 12, false);
+const jumpGeo = new THREE.TorusGeometry(4, 0.6, 16, 64);
+function makeHardware() {
+  const g = new THREE.Group();
+  const add = (geo, fn) => { const m = new THREE.Mesh(geo, metal); m.castShadow = true; fn(m); g.add(m); };
+  add(jumpGeo, m => { m.rotation.y = Math.PI / 2; m.position.y = 3; });
+  [9.3, 15.1, 20.9].forEach((y, i) => add(linkGeo, m => { m.position.y = y; if (i % 2) m.rotation.y = Math.PI / 2; }));
+  add(ringGeo, m => { m.position.y = 35.2; });
+  return g;
+}
+const TOP_WITH_HW = 47.2, TOP_NO_HW = 4.6;
+// 3D printed chain, same proportions as chain_6_links.stl: 1.6 mm wire, links 11.8 x 6.8 mm, hanging pitch 8.6 mm
+const PC = { S: 5.0, A: 2.6, R: 0.8, N: 6 };
+PC.P = PC.S + 2 * PC.A - 2 * PC.R; PC.C0 = PC.S / 2 + PC.A;
+const TOP_PRINTED = PC.C0 + (PC.N - 1) * PC.P + PC.S / 2 + PC.A;
+function printedLinkGeo() {
+  const o = PC.A + PC.R, i = PC.A - PC.R, h = PC.S / 2;
+  const shape = new THREE.Shape();
+  shape.absarc(0, h, o, 0, Math.PI, false); shape.absarc(0, -h, o, Math.PI, Math.PI * 2, false); shape.closePath();
+  const hole = new THREE.Path();
+  hole.absarc(0, h, i, 0, Math.PI, false); hole.absarc(0, -h, i, Math.PI, Math.PI * 2, false); hole.closePath();
+  shape.holes.push(hole);
+  const g = new THREE.ExtrudeGeometry(shape, { depth: 2 * PC.R - 0.6, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.3, bevelSegments: 2, curveSegments: 24 });
+  g.translate(0, 0, -(2 * PC.R - 0.6) / 2);
+  g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
+  return g;
+}
+function makePrintedChain(mat) {
+  const grp = new THREE.Group(), geo = printedLinkGeo();
+  for (let k = 0; k < PC.N; k++) {
+    const m = new THREE.Mesh(geo, mat); m.castShadow = true;
+    m.position.y = PC.C0 + k * PC.P;
+    if (k % 2 === 0) m.rotation.y = Math.PI / 2;
+    grp.add(m);
+  }
+  grp.userData.geo = geo;
+  return grp;
+}
+// 3D printed round ring, same size as round_ring.stl: 28 mm across, 2.6 mm band, with a small gap where the split is
+const PR = { R: 12.7, r: 1.25 };
+PR.CY = PR.R + 0.3; const TOP_RING = PR.CY + PR.R + PR.r;
+function makePrintedRing(mat) {
+  const g = new THREE.TorusGeometry(PR.R, PR.r, 24, 160, Math.PI * 2 - 0.07);
+  g.rotateZ(Math.PI + 0.035);
+  g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
+  const m = new THREE.Mesh(g, mat); m.castShadow = true;
+  m.rotation.y = Math.PI / 2; m.position.y = PR.CY;
+  const grp = new THREE.Group(); grp.add(m); grp.userData.geo = g;
+  return grp;
+}
+const stickerMat = new THREE.MeshStandardMaterial({ color: 0xe8e8e3, roughness: 0.45, metalness: 0.05 });
+const stickerRingMat = new THREE.MeshStandardMaterial({ color: 0xb87a3a, roughness: 0.35, metalness: 0.8 });
+
+const items = [];
+// Compact models: hanging versions have the keyring hole at the origin; sitting versions stand on y = 0
+const geoCache = new Map();
+function loadCompact(url) {
+  if (geoCache.has(url)) return geoCache.get(url);
+  const p = (async () => {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("load failed");
+    const bin = atob((await r.text()).trim());
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const dv = new DataView(bytes.buffer);
+    const nV = dv.getUint32(0, true), nF = dv.getUint32(4, true), ib = dv.getUint32(8, true);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(bytes.buffer.slice(12, 12 + nV * 12)), 3));
+    const ibuf = bytes.buffer.slice(12 + nV * 12, 12 + nV * 12 + nF * 3 * ib);
+    g.setIndex(new THREE.BufferAttribute(ib === 2 ? new Uint16Array(ibuf) : new Uint32Array(ibuf), 1));
+    const smooth = toCreasedNormals(g, Math.PI / 5); smooth.computeBoundingBox();
+    return smooth;
+  })();
+  geoCache.set(url, p); p.catch(() => geoCache.delete(url));
+  return p;
+}
+const versionGeos = v => Promise.all(MODELS.map(m => loadCompact(`models/${v}-${m.id}.txt`)));
+let versionToken = 0;
+const productFile = () => state.product === "key" ? curKeyVariant().file : curProduct().file;
+const productGeos = () => isOcto() ? versionGeos(state.version) : Promise.all([loadCompact(`models/${productFile()}.txt`)]);
+let productToken = 0;
+async function setProduct(pid) {
+  state.product = pid; state.looks = state.looksBy[pid]; state.target = "all"; state.show = "all";
+  save(); syncUI();
+  const token = ++productToken;
+  try {
+    const geos = await productGeos();
+    if (token !== productToken) return;
+    geos.forEach((g, i) => { items[i].mesh.geometry = g; });
+    applyLooks(); layout(false);
+  } catch (e) { /* keep showing what we have */ }
+  PRODUCTS.filter(p => p.file).forEach(p => loadCompact(`models/${p.file}.txt`).catch(() => {}));
+}
+async function setVersion(v) {
+  state.version = v; save(); syncUI();
+  const token = ++versionToken;
+  const status = $("ver-status"); if (status) status.hidden = false;
+  try {
+    const geos = await versionGeos(v);
+    if (token !== versionToken) return;
+    items.forEach((it, i) => { it.mesh.geometry = geos[i]; });
+    applyLooks(); layout(false);
+  } catch (e) { /* keep the current version showing */ }
+  if (status && token === versionToken) status.hidden = true;
+  [VERSIONS.findIndex(x => x.id === v) + 1, VERSIONS.findIndex(x => x.id === v) - 1]
+    .map(k => VERSIONS[k]).filter(Boolean).forEach(n => versionGeos(n.id).catch(() => {}));
+}
+versionGeos(state.version).then(geos => {
+  geos.forEach((smooth, i) => {
+    const mat = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+    mat.userData.speckle = { value: 0 };
+    mat.onBeforeCompile = sh => {
+      sh.uniforms.uSpeckle = mat.userData.speckle;
+      sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vObjPos;")
+        .replace("#include <begin_vertex>", "#include <begin_vertex>\nvObjPos = position;");
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\n" + SPECKLE_GLSL)
+        .replace("#include <color_fragment>", "#include <color_fragment>\n" + SPECKLE_APPLY);
+    };
+    const mesh = new THREE.Mesh(smooth, mat); mesh.castShadow = true; mesh.userData.idx = i;
+    const hw = makeHardware();
+    const pc = makePrintedChain(mat); pc.visible = false;
+    const pr = makePrintedRing(mat); pr.visible = false;
+    const sticker = new THREE.Group(); sticker.visible = false;
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.25, 64), stickerMat); disc.rotation.x = Math.PI / 2;
+    const coil = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.035, 8, 64), stickerRingMat);
+    sticker.add(disc, coil);
+    const pivot = new THREE.Group(); const body = new THREE.Group();
+    body.add(mesh, hw, pc, pr, sticker); pivot.add(body); scene.add(pivot);
+    items.push({ pivot, body, hw, pc, pr, sticker, mat, mesh, phase: i * 1.7 });
+  });
+  $("loading").remove();
+  if (!isOcto()) setProduct(state.product); else { applyLooks(); layout(false); }
+  tick();
+}).catch(() => { $("loading").textContent = "The models could not load. Reload the page to try again."; });
+
+// smooth 3D value noise, used for the speckled skin
+function hash3(a, b, c) {
+  let n = Math.imul(a, 374761393) ^ Math.imul(b, 668265263) ^ Math.imul(c, 1274126177);
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+}
+function vnoise(x, y, z) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const s = t => t * t * (3 - 2 * t), u = s(x - xi), v = s(y - yi), w = s(z - zi), L = (a, b, t) => a + (b - a) * t;
+  return L(L(L(hash3(xi, yi, zi), hash3(xi + 1, yi, zi), u), L(hash3(xi, yi + 1, zi), hash3(xi + 1, yi + 1, zi), u), v),
+           L(L(hash3(xi, yi, zi + 1), hash3(xi + 1, yi, zi + 1), u), L(hash3(xi, yi + 1, zi + 1), hash3(xi + 1, yi + 1, zi + 1), u), v), w);
+}
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const CREAM = new THREE.Color("#F2DEC4"), FRECKLE = new THREE.Color("#3A1A12");
+function paintGradient(it, stops, speckle = false) {
+  const g = it.mesh.geometry, pos = g.attributes.position, n = pos.count;
+  if (!g.attributes.color) g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  const col = g.attributes.color, cols = stops.map(c => new THREE.Color(c));
+  const y0 = g.boundingBox.min.y, y1 = g.boundingBox.max.y, tmp = new THREE.Color();
+  for (let k = 0; k < n; k++) {
+    const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k);
+    const t = 1 - (y - y0) / (y1 - y0);
+    const seg = Math.min(t * (cols.length - 1), cols.length - 1.0001), j = Math.floor(seg);
+    tmp.copy(cols[j]).lerp(cols[j + 1], seg - j);
+    if (speckle) {
+      // broad mottling, pale papillae spots and small dark freckles, like a common octopus's skin
+      tmp.multiplyScalar(0.82 + 0.36 * vnoise(x * 0.17, y * 0.17, z * 0.17));
+      tmp.lerp(CREAM, 0.8 * smooth(0.72, 0.8, vnoise(x * 1.15 + 11, y * 1.15, z * 1.15)));
+      tmp.lerp(FRECKLE, 0.6 * smooth(0.78, 0.86, vnoise(x * 2.1 + 5, y * 2.1 + 3, z * 2.1)));
+    }
+    col.setXYZ(k, tmp.r, tmp.g, tmp.b);
+  }
+  col.needsUpdate = true;
+}
+// Speckled skin, drawn per pixel so spots stay crisp: soft mottling, a fine darker vein network,
+// pale cream spots of mixed sizes, and tiny papillae, like a common octopus's skin
+const SPECKLE_GLSL = `
+varying vec3 vObjPos;
+uniform float uSpeckle;
+vec3 sk_hash(vec3 p) { p = fract(p * vec3(.1031, .1030, .0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+float sk_noise(vec3 p) {
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(sk_hash(i).x, sk_hash(i + vec3(1,0,0)).x, f.x), mix(sk_hash(i + vec3(0,1,0)).x, sk_hash(i + vec3(1,1,0)).x, f.x), f.y),
+             mix(mix(sk_hash(i + vec3(0,0,1)).x, sk_hash(i + vec3(1,0,1)).x, f.x), mix(sk_hash(i + vec3(0,1,1)).x, sk_hash(i + vec3(1,1,1)).x, f.x), f.y), f.z);
+}
+vec3 sk_cells(vec3 p) {
+  vec3 i = floor(p), f = fract(p); float F1 = 9.0, F2 = 9.0, h = 0.0;
+  for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+    vec3 g = vec3(float(x), float(y), float(z)); vec3 r = g + sk_hash(i + g) - f; float d = dot(r, r);
+    if (d < F1) { F2 = F1; F1 = d; h = sk_hash(i + g + 17.0).x; } else if (d < F2) { F2 = d; }
+  }
+  return vec3(sqrt(F1), sqrt(F2), h);
+}`;
+const SPECKLE_APPLY = `
+if (uSpeckle > 0.5) {
+  vec3 p = vObjPos;
+  float m = sk_noise(p * 0.13) * 0.6 + sk_noise(p * 0.3 + 4.0) * 0.4;
+  diffuseColor.rgb *= 0.74 + 0.5 * m;
+  vec3 w = sk_cells(p * 0.45);
+  float vein = 1.0 - smoothstep(0.0, 0.08, w.y - w.x);
+  diffuseColor.rgb *= 1.0 - 0.38 * vein * (0.4 + 0.6 * m);
+  vec3 s = sk_cells(p * 0.85 + 3.1);
+  float rad = mix(0.14, 0.34, s.z);
+  float spot = (1.0 - smoothstep(rad - 0.05, rad, s.x)) * step(0.4, s.z) * smoothstep(0.15, 0.45, sk_noise(p * 0.2 + 9.0));
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.71, 0.55), spot * 0.85);
+  vec3 q = sk_cells(p * 2.2 + 7.7);
+  float pap = (1.0 - smoothstep(0.09, 0.15, q.x)) * step(0.6, q.z);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.66, 0.42, 0.3), pap * 0.55);
+}`;
+function applyLooks() {
+  items.forEach((it, i) => {
+    const l = state.looks[i];
+    if (!l) return;
+    Object.assign(it.mat, { clearcoatRoughness: 0.6 }, FINISHES.find(f => f.id === l.finish)?.m || FINISHES[1].m);
+    it.mat.userData.speckle.value = l.g && l.speckle ? 1 : 0;
+    if (l.g) { paintGradient(it, l.g, false); it.mat.vertexColors = true; it.mat.color.set("#ffffff"); }
+    else { it.mat.vertexColors = false; it.mat.color.set(l.c); }
+    if (it.mat.transmission > 0) { it.mat.attenuationColor.copy(it.mat.color); it.mat.attenuationDistance = l.finish === "clear" ? 30 : 16; }
+    it.mat.needsUpdate = true;
+  });
+  const m = METALS.find(x => x.id === state.metal) || METALS[0];
+  metal.color.set(m.color); metal.roughness = m.rough; metal.metalness = m.metal;
+  items.forEach((it, i) => {
+    const l = state.looks[i]; if (!l) return;
+    const c = new THREE.Color(l.g ? l.g[0] : "#ffffff");
+    [it.pc, it.pr].forEach(g => {
+      const ca = g.userData.geo.attributes.color;
+      for (let k = 0; k < ca.count; k++) ca.setXYZ(k, c.r, c.g, c.b);
+      ca.needsUpdate = true;
+    });
+  });
+}
+
+function layout(keepAngle) {
+  if (!items.length) return;
+  const mode = curMode(), hang = mode === "hang", free = mode === "free";
+  const top = hang ? (state.hw ? (state.chain === "printed" ? TOP_PRINTED : state.chain === "ring" ? TOP_RING : TOP_WITH_HW) : TOP_NO_HW) : 0;
+  const gap = hang ? 56 : mode === "sit" ? 60 : 50;
+  const show = count() === 1 ? [0] : state.show === "all" ? [0, 1, 2] : targetIdx();
+  const bb = items[0].mesh.geometry.boundingBox, size = new THREE.Vector3(), ctr = new THREE.Vector3();
+  bb.getSize(size); bb.getCenter(ctr);
+  items.forEach((it, i) => {
+    const k = show.indexOf(i);
+    it.pivot.visible = k >= 0;
+    it.hw.visible = hang && state.hw && state.chain === "metal";
+    it.pc.visible = hang && state.hw && state.chain === "printed";
+    it.pr.visible = hang && state.hw && state.chain === "ring";
+    const kv = curKeyVariant();
+    it.sticker.visible = i === 0 && state.product === "key" && !!kv.pocketR;
+    if (it.sticker.visible) {
+      it.sticker.children[0].scale.set(kv.pocketR, 1, kv.pocketR);
+      it.sticker.children[1].scale.setScalar(kv.pocketR);
+      it.sticker.position.set(0, kv.pocketY, 1.7 - 0.6 + 0.13);
+    }
+    it.pivot.position.set(count() === 1 ? 0 : (k - (show.length - 1) / 2) * gap, top, 0);
+    it.pivot.rotation.z = 0;
+    if (free) it.body.position.set(-ctr.x, -ctr.y, -ctr.z); else it.body.position.set(0, -top, 0);
+  });
+  backdrop.visible = !(mode === "sit"); floor.visible = mode === "sit";
+  let w = show.length * gap, h = hang ? top + 46 : mode === "sit" ? 52 : 44, cy = hang ? (top - 40) / 2 + 2 : mode === "sit" ? 22 : 16;
+  if (count() === 1 && hang) { w = Math.max(size.x, 30) + 10; h = top + (-bb.min.y) + 6; cy = (top + bb.min.y) / 2; }
+  if (free) { w = size.x + 10; h = size.y + 10; cy = 0; }
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  const dist = Math.max((h / 2) / Math.tan(fov / 2), (w / 2) / Math.tan(fov / 2) / camera.aspect) * (hang ? 1.14 : 1.22);
+  const dir = keepAngle ? camera.position.clone().sub(controls.target).normalize()
+    : free ? new THREE.Vector3(0.28, 0.2, 1).normalize() : new THREE.Vector3(hang ? 0.22 : 0.3, hang ? 0.06 : 0.38, 1).normalize();
+  controls.target.set(0, cy, 0);
+  camera.position.copy(controls.target).addScaledVector(dir, dist);
+  controls.update();
+}
+
+// click an octopus to select it (ignore drags)
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerup", e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects(items.filter(it => it.pivot.visible).map(it => it.mesh))[0];
+  if (hit && isOcto()) select(MODELS[hit.object.userData.idx].id);
+});
+
+function resize() {
+  const r = stage.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
+}
+let lastAspect = 0;
+new ResizeObserver(() => { resize(); if (items.length && Math.abs(camera.aspect - lastAspect) > 0.05) { lastAspect = camera.aspect; layout(true); } }).observe(stage);
+resize();
+
+const clock = new THREE.Clock();
+function tick() {
+  const t = clock.getElapsedTime();
+  items.forEach(it => {
+    const target = state.swing && !reduceMotion && curMode() === "hang" ? Math.sin(t * 1.6 + it.phase) * 0.06 : 0;
+    it.pivot.rotation.z += (target - it.pivot.rotation.z) * 0.08;
+  });
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+</script>
