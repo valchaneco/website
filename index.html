@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Val · A short story</title>
-<meta name="description" content="Valerie Chaneco is a human storyteller. Start with the story.">
-<meta property="og:title" content="Val · A short story">
-<meta property="og:description" content="Human storyteller. Start with the story.">
+<title>Val, Storyteller</title>
+<meta name="description" content="A guy in bachata class calls me “sticky hands.”">
+<meta property="og:title" content="Val, Storyteller">
+<meta property="og:description" content="A guy in bachata class calls me “sticky hands.”">
 <meta property="og:url" content="https://valchaneco.github.io/website/">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐙</text></svg>">
@@ -102,7 +102,8 @@
     min-width: 1.75em; padding: .32em .4em; border-radius: 999px; text-align: center;
     margin-left: .15em; transition: transform .2s ease, background .2s ease;
   }
-  .cite.b { background: var(--blue); }
+  .cite.b { background: var(--ink); }
+  .cite:hover, .cite:focus-visible { background: var(--accent); }
   .cite:hover, .cite:focus-visible { transform: translateY(-2px) scale(1.08); }
   .cite::after {
     content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px);
@@ -368,6 +369,10 @@
   .copy-email{cursor:pointer}
   :root[data-theme="dark"] .help-card .tags li{background:#34343A;color:#ECE8E1;border-color:#34343A}
   .edu{font-size:.82rem;line-height:1.5;color:var(--muted);margin:28px 0 0;max-width:60ch}
+  .stage-title{text-align:center;margin:28px auto 0;padding:0 20px;max-width:24ch;text-wrap:balance;font-size:clamp(22px,5.5vw,32px);font-weight:700;letter-spacing:-0.03em;line-height:1.15;color:var(--ink)}
+  a.inline{color:inherit;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
+  a.inline:hover{color:var(--accent)}
+  .toc .ch-body a.inline{display:inline;text-decoration:underline}
 </style>
 </head>
 <body id="top">
@@ -385,9 +390,10 @@
 </header>
 <main>
 
-  <div class="stage" id="stage" role="img" aria-label="Three octopus mascots: see no evil, hear no evil, speak no evil">
+  <h2 class="stage-title">Three octopuses, three ways I can help.</h2>
+  <div class="stage" id="stage" role="img" aria-label="Three octopus mascots: Pedro (see no evil), Diego (hear no evil) and Juan (speak no evil)">
     <div class="fallback" aria-hidden="true">🐙🐙🐙</div>
-    <p class="stage-hint" aria-hidden="true">pat an octopus for help</p>
+    <p class="stage-hint" aria-hidden="true">tap one</p>
     <div class="olabels">
       <a class="olabel" href="#see" data-i="0" aria-label="Pedro, see no evil">Pedro</a>
       <a class="olabel" href="#hear" data-i="1" aria-label="Diego, hear no evil">Diego</a>
@@ -443,7 +449,7 @@
     </p>
 
     <p class="line">
-      Three months into Dubai, I was on the phone with my mom, crying, telling her I wanted to go home. I stayed for four years and five months. I asked “chicken or beef?” more times than I can count, and every time I came home to visit, I was a little different.<a class="cite b" id="r1" href="#cultures" data-tip="Chicken or Beef?">1</a>
+      Three months into Dubai, I was on the phone with my mom, crying, telling her I wanted to go home. I stayed for four years and five months. I asked “chicken or beef?” more times than I can count.<a class="cite b" id="r1" href="#cultures" data-tip="Chicken or Beef?">1</a>
     </p>
 
     <p class="line">
@@ -451,7 +457,7 @@
     </p>
 
     <p class="line">
-      I've always had a lot of ideas in my head, or at least I'd like to think so.<a class="cite" id="r2" href="#ideas" data-tip="I Have an Idea">3</a>
+      My head is often full of ideas.<a class="cite" id="r2" href="#ideas" data-tip="I Have an Idea">3</a>
     </p>
 
     <p class="line">
@@ -464,11 +470,11 @@
     </p>
 
     <p class="line">
-      Today, I'm the Lead Storyteller at Good Cup.<a class="cite" id="r7" href="#now" data-tip="Lola Basyang Has a Day Job">7</a>
+      Today, I'm the Lead Storyteller at <a class="inline" href="https://goodcup.ph/blogs/good-talk" target="_blank" rel="noopener">Good Cup</a>.<a class="cite" id="r7" href="#now" data-tip="Lola Basyang Has a Day Job">7</a>
     </p>
 
     <p class="line">
-      The three octopuses at the top of this page cover their eyes, ears and mouth.<a class="cite b" id="r8" href="#lab" data-tip="The Key of Ibong Adarna">8</a> Tap one and it will take you where you need to go, or follow the numbers.
+      The three octopuses at the top of this page cover their eyes, ears and mouth.<a class="cite b" id="r8" href="#lab" data-tip="The Key of Ibong Adarna">8</a> Tap one and it will take you where you need to go.
     </p>
   </article>
 
@@ -535,8 +541,6 @@
     <p>I enrolled myself in a surfboard shaping workshop on the Gold Coast. I really enjoyed it, and I still have that surfboard in storage somewhere.</p>
     <p>Back in the Philippines, I joined a carpentry workshop.</p>
     <ul class="facts">
-      <li><b>Surfboard shaping</b>A shaping workshop on the Gold Coast.</li>
-      <li><b>Carpentry</b>A local workshop in the Philippines.</li>
       <li><b>Cooking</b>Learned the way most people do: by trying, tasting and trying again.</li>
       <li><b>3D printing</b>Designing printable keychains. <a href="#lab">See chapter 8</a>.</li>
     </ul>
@@ -549,22 +553,22 @@
         </div></li>
       <li class="ch" id="building"><a href="#building" aria-expanded="false" aria-controls="building-body"><span class="n">4</span><span class="t">A Box of Feelings<span class="sub">A coffee box I wished existed.</span></span><span class="k">Feelings Coffee</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="building-body" hidden>
-    <p>It started during the lockdown. It was an uncertain time for everyone, and it was something I wished existed. The original idea was closer to Leafly than to the sampler box it turned into.</p>
+    <p>It started during the lockdown, an uncertain time for everyone. The original idea was closer to Leafly than to the sampler box it turned into.</p>
     <p>I was talking to one of my Tagalog students at the time, and through him I learned about startups. He was the first person who believed in the idea. He said it had bones.</p>
-    <p>This was right after my MBA. In school, problems came as case studies: one subject at a time, already in the past. Feelings Coffee was happening live. I was dealing with real people and juggling marketing, operations, finance, logistics and sourcing all at once. Some things were within my control, and some weren't, like delayed deliveries, logistics problems, or something I had never faced before.</p>
+    <p>This was right after my MBA. In school, problems came as case studies: one subject at a time, already in the past. Feelings Coffee was happening live. I was dealing with real people and juggling marketing, operations, finance, logistics and sourcing all at once. Some things were within my control, and some weren't, like delayed deliveries, supplier problems, or something I had never faced before.</p>
     <p>At first, it was all me. Then I learned to work with an illustrator: delegating, communicating, figuring out my strengths and weaknesses. It was a good learning experience.</p>
     <ul class="tags"><li>Brand building</li><li>Copywriting</li><li>Visual direction</li><li>Customer experience</li></ul>
         </div></li>
-      <li class="ch" id="teaching"><a href="#teaching" aria-expanded="false" aria-controls="teaching-body"><span class="n">5</span><span class="t">Nakakapagpabagabag<span class="sub">Conversational Tagalog, one on one, with adults.</span></span><span class="k">Tagalog</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+      <li class="ch" id="teaching"><a href="#teaching" aria-expanded="false" aria-controls="teaching-body"><span class="n">5</span><span class="t">Nakakapagpabagabag<span class="sub">Teaching Tagalog on YouTube.</span></span><span class="k">Tagalog</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="teaching-body" hidden>
     <p>After Feelings Coffee, I went back to Tagalog and focused on YouTube. It was a one-woman show. I came up with the ideas and concepts, researched the topics, wrote the descriptions, stood in front of the camera, edited the videos, made the thumbnails and posted on Instagram.</p>
     <ul class="tags"><li>Teaching</li><li>Video content</li><li>Clear explanation</li></ul>
         </div></li>
-      <li class="ch" id="data"><a href="#data" aria-expanded="false" aria-controls="data-body"><span class="n">6</span><span class="t">712 Flights, 92 Airports, 60 Cities, 35 Countries<span class="sub">I taught myself data storytelling and data visualization, before AI could draw the charts.</span></span><span class="k">Data storytelling</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+      <li class="ch" id="data"><a href="#data" aria-expanded="false" aria-controls="data-body"><span class="n">6</span><span class="t">712 Flights, 92 Airports, 60 Cities, 35 Countries<span class="sub">I taught myself data storytelling and data visualization.</span></span><span class="k">Data storytelling</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="data-body" hidden>
     <p>One of the first stories I told with data was my own: how much did I travel as cabin crew?</p>
     <div class="stats" role="list">
-      <div class="stat big" role="listitem"><b>4.3</b><span>years</span></div>
+      <div class="stat big" role="listitem"><b>53</b><span>months</span></div>
       <div class="stat" role="listitem"><b>712</b><span>flights</span></div>
       <div class="stat" role="listitem"><b>92</b><span>airports</span></div>
       <div class="stat" role="listitem"><b>60</b><span>cities</span></div>
@@ -577,7 +581,7 @@
         </div></li>
       <li class="ch" id="now"><a href="#now" aria-expanded="false" aria-controls="now-body"><span class="n">7</span><span class="t">Lola Basyang Has a Day Job<span class="sub">Lead Storyteller at Good Cup.</span></span><span class="k">Present tense</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="now-body" hidden>
-    <p>I'm in charge of the blogs and the captions for most posts. Ideation is part of everyone's job on the team, and I contribute ideas for social media and for campaigns.</p>
+    <p>I'm in charge of <a class="inline" href="https://goodcup.ph/blogs/good-talk" target="_blank" rel="noopener">the blogs</a> and the captions for most posts. Ideation is part of everyone's job on the team, and I contribute ideas for social media and for campaigns.</p>
         </div></li>
       <li class="ch" id="lab"><a href="#lab" aria-expanded="false" aria-controls="lab-body"><span class="n">8</span><span class="t">The Key of Ibong Adarna<span class="sub">If you have the key, you can unlock many doors.</span></span><span class="k">Keychain Studio</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="lab-body" hidden>
