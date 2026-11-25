@@ -57,7 +57,7 @@
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   /* ---------- Story ---------- */
-  .story { padding-top: 28px; padding-bottom: 24px; }
+  .story { padding-top: 52px; padding-bottom: 24px; }
   .kicker {
     display: flex; align-items: center; gap: 12px;
     font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
@@ -76,7 +76,7 @@
     font-size: 16px; shape-outside: margin-box;
   }
   .dropcap svg { width: 100%; height: 100%; display: block; overflow: visible; color: var(--ink); }
-  .dropcap .letter { font-family: "Grenze Gotisch", "Old English Text MT", serif; font-weight: 600; font-size: 96px; fill: var(--ink); stroke: var(--ink); stroke-width: .9; stroke-linejoin: round; }
+  .dropcap .letter { font-family: "Grenze Gotisch", "Old English Text MT", serif; font-weight: 600; font-size: 110px; fill: var(--ink); stroke: var(--ink); stroke-width: .9; stroke-linejoin: round; }
   .dropcap .blot { fill: var(--ink); opacity: .85; }
   .dropcap .orns { transform-origin: 60px 60px; }
   /* written by hand, like a scribe with a quill: the pen traces the O, the ink floods in and soaks
@@ -393,6 +393,15 @@
   :root[data-theme="dark"] .olabel .olsub{color:#6F6A64!important}
   .toc .n,.toc .k{padding-top:0;line-height:calc(19px * 1.6)}
   .toc .chev{align-self:start;height:calc(19px * 1.6);align-items:center}
+  .topnav .navlinks .sound-toggle{margin-left:4px;margin-right:-10px}
+  @media (max-width: 400px){.topnav .navlinks .sound-toggle{margin-left:2px;margin-right:-5px}}
+  .topnav .navlinks a{white-space:nowrap}
+  @media (max-width: 360px){.topnav{padding:10px 8px}.topnav-in{padding-left:14px}.topnav .navlinks{gap:10px;font-size:13px}.topnav .sound-toggle,.topnav .theme-toggle{width:34px;height:34px}.topnav .navlinks .sound-toggle{margin-left:0;margin-right:-2px}}
+  @media (max-width: 340px){.topnav{padding:8px 6px}.topnav-in{gap:8px;padding:6px 6px 6px 12px}.topnav .mark{font-size:19px}.topnav .navlinks{gap:8px;font-size:12.5px}.topnav .navlinks .sound-toggle{margin-right:0}}
+  .dropcap .blot{display:none}
+  .dropcap{width:6.6em;height:6.6em;margin:-.5em .6em 0 -.25em}
+  .story p .story-more{clear:left;margin-left:calc(6.6 * 16px - .25 * 16px + .6 * 16px)}
+  .contents .contents-in{color:var(--muted);max-width:52ch;margin:10px 0 0;font-size:1.05rem;line-height:1.5;text-wrap:pretty}
 </style>
 </head>
 <body id="top">
@@ -431,11 +440,11 @@
             <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hatch" x1="0" y1="0" x2="0" y2="4"/></pattern>
             <g id="corner" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path stroke="currentColor" stroke-width="1.1" d="M12 34 C12 20 20 12 34 12"/>
-              <path stroke="#F2735E" stroke-width="1.2" d="M34 12 C46 12 50 24 41 28 C34 31 30 23 36 21"/>
-              <path stroke="#1F9A9A" stroke-width="1.2" d="M12 34 C12 46 24 50 28 41 C31 34 23 30 21 36"/>
+              <path stroke="currentColor" stroke-width="1.2" d="M34 12 C46 12 50 24 41 28 C34 31 30 23 36 21"/>
+              <path stroke="currentColor" stroke-width="1.2" d="M12 34 C12 46 24 50 28 41 C31 34 23 30 21 36"/>
               <path stroke="currentColor" stroke-width=".9" d="M22 22 C27 17 33 18 33 23 C33 27 28 27 28 24"/>
-              <path fill="#F2735E" stroke="none" d="M44 10 C50 6 56 9 58 12 C52 14 47 13 44 10Z"/>
-              <path fill="#1F9A9A" stroke="none" d="M10 44 C6 50 9 56 12 58 C14 52 13 47 10 44Z"/>
+              <path fill="currentColor" stroke="none" d="M44 10 C50 6 56 9 58 12 C52 14 47 13 44 10Z"/>
+              <path fill="currentColor" stroke="none" d="M10 44 C6 50 9 56 12 58 C14 52 13 47 10 44Z"/>
               <circle fill="currentColor" stroke="none" cx="17" cy="17" r="1.6"/>
             </g>
             <g id="edge" fill="none" stroke-linecap="round">
@@ -457,7 +466,7 @@
             <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
             <feDisplacementMap in="SourceGraphic" scale="1.6"/>
           </filter>
-          <text class="letter" x="60" y="88" text-anchor="middle" filter="url(#inkbleed)">O</text>
+          <text class="letter" x="60" y="92" text-anchor="middle" filter="url(#inkbleed)">O</text>
           <circle class="blot" cx="83" cy="99" r="1.3"/><circle class="blot b2" cx="86.5" cy="101.5" r=".7"/>
         </svg>
       </span><span class="sr">O</span>nce upon a time, in a land called Dubai, I was living away from home for the first time.
@@ -465,7 +474,7 @@
     </p>
 
     <p class="line">
-      Before Dubai, I applied to Qatar Airways. There was a long queue outside the hotel, and I was in it, wearing a blazer and a skirt, along with more than 900 other candidates. I made it to the last 14, and then I was cut. A few days later, Emirates had an opening. There were about 100 of us that time, and I got in.
+      Before Dubai, I applied to Qatar Airways. There was a long queue outside the hotel, and I was in it, wearing a blazer and a skirt, along with more than 900 other candidates. I made it to the final 14, and then I was cut. A few days later, Emirates had an opening. There were about 100 of us that time, and I got in.
     </p>
 
     <p class="line">
@@ -553,6 +562,7 @@
   <!-- ===================== CONTENTS ===================== -->
   <nav class="contents col reveal" id="notes" aria-label="Notes">
     <h2>If Life Had Chapters</h2>
+    <p class="contents-in">Would we work well together? Here are a few chapters to help you decide.</p>
     <ol class="toc">
       <li class="ch" id="cultures"><a href="#cultures" aria-expanded="false" aria-controls="cultures-body"><span class="n">1</span><span class="t">Chicken or Beef?<span class="sub">More than four years as a flight attendant with Emirates Airlines.</span></span><span class="k">Emirates</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="cultures-body" hidden>
@@ -617,7 +627,7 @@
         <div class="ch-body" id="now-body" hidden>
     <p>I'm in charge of <a class="inline" href="https://goodcup.ph/blogs/good-talk" target="_blank" rel="noopener">the blogs</a> and the captions for most posts. Ideation is part of everyone's job on the team, and I contribute ideas for social media and for campaigns.</p>
         </div></li>
-      <li class="ch" id="lab"><a href="#lab" aria-expanded="false" aria-controls="lab-body"><span class="n">8</span><span class="t">The Key of Ibong Adarna<span class="sub">If you have the key, you can unlock many doors.</span></span><span class="k">Keychain Studio</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+      <li class="ch" id="lab"><a href="#lab" aria-expanded="false" aria-controls="lab-body"><span class="n">8</span><span class="t">The Key of Ibong Adarna<span class="sub">If you have the key, you can unlock many doors.</span></span><span class="k">Keychain studio</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="lab-body" hidden>
     <p><a class="inline" href="https://valchaneco.github.io/website/keychain-studio/" target="_blank" rel="noopener">Keychain Studio</a> has a few keys. It also has three octopus keychains for 3D printing: see no evil, hear no evil and speak no evil, with octopuses instead of the three wise monkeys.</p>
     <p>I'm fascinated by octopuses. They have three hearts, blue blood and nine brains. They're so different, and that resonates with me. I've never really felt like I belonged anywhere, not even in my own family. That's not meant to sound dramatic. It's just the feeling of being different.</p>
@@ -1226,10 +1236,13 @@
     const story = document.getElementById('story'), btn = story && story.querySelector('.story-more');
     if (!btn) return;
     const label = btn.querySelector('.t');
+    const home = btn.parentNode, after = btn.nextSibling;
     btn.addEventListener('click', () => {
       const open = story.classList.toggle('collapsed') === false;
       btn.setAttribute('aria-expanded', open);
       label.textContent = open ? 'Show less' : 'Read the whole story';
+      // open: the button moves to the end of the story; closed: back under the first paragraph
+      if (open) story.appendChild(btn); else home.insertBefore(btn, after);
       if (!open) story.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     // Following a link to a hidden part of the story opens it
