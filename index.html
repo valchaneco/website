@@ -98,12 +98,12 @@
     position: relative; display: inline-block;
     font-weight: 600; font-size: .5em; letter-spacing: 0; line-height: 1;
     vertical-align: super; text-decoration: none;
-    color: #fff; background: var(--accent);
+    color: var(--paper); background: var(--ink);
     min-width: 1.75em; padding: .32em .4em; border-radius: 999px; text-align: center;
     margin-left: .15em; transition: transform .2s ease, background .2s ease;
   }
   .cite.b { background: var(--ink); }
-  .cite:hover, .cite:focus-visible { background: var(--accent); }
+  .cite:hover, .cite:focus-visible { background: var(--accent); color: #fff; }
   .cite:hover, .cite:focus-visible { transform: translateY(-2px) scale(1.08); }
   .cite::after {
     content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px);
@@ -145,7 +145,7 @@
   .olabel.on[data-i="2"], .olabel[data-i="2"]:hover { text-decoration-color: var(--lilac); }
   @media (hover: none) { .olabel.on::after { content: "tap again"; position: absolute; left: 50%; bottom: calc(100% + 2px); transform: translateX(-50%); font-size: 11px; font-weight: 500; color: var(--muted); white-space: nowrap; } }
   .olabel.on, .olabel:hover, .olabel:focus-visible {
-    color: var(--ink); background: var(--soft); border-color: var(--line); transform: translateX(-50%) translateY(-3px);
+    color: var(--ink); background: none; border-color: transparent; transform: translateX(-50%) translateY(-3px);
   }
   .stage .fallback { position: absolute; inset: 0; display:none; place-items: center; font-size: 56px; letter-spacing: 12px; }
   .stage.ready .fallback { display: none; }
@@ -373,6 +373,24 @@
   a.inline{color:inherit;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
   a.inline:hover{color:var(--accent)}
   .toc .ch-body a.inline{display:inline;text-decoration:underline}
+  .olabel{display:flex!important;flex-direction:column;align-items:center;text-decoration:none!important}
+  .olabel .nm{display:inline!important;text-decoration-line:underline;text-decoration-color:inherit;text-decoration-thickness:inherit;text-underline-offset:inherit}
+  .olabel .olsub{display:block;margin-top:5px;font-size:.78em;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)!important;text-decoration:none}
+  .work-h{margin:18px 0 8px!important;font-size:.82rem!important;font-weight:600;color:var(--muted)!important}
+  .toc .ch-body ul.work{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px}
+  .toc .ch-body ul.work a{display:flex!important;flex-direction:column;gap:2px;padding:12px 14px!important;border:1px solid var(--line)!important;border-radius:12px;background:var(--soft)!important;color:var(--ink);text-decoration:none;transition:border-color .2s ease}
+  .toc .ch-body ul.work a:hover{border-color:var(--accent)!important}
+  .toc .ch-body ul.work b{font-weight:600;font-size:.98rem}
+  .toc .ch-body ul.work span{font-size:.85rem;color:var(--muted)}
+  .olabel.on[data-i="0"] .nm, .olabel[data-i="0"]:hover .nm { color: var(--coral); }
+  .olabel.on[data-i="1"] .nm, .olabel[data-i="1"]:hover .nm { color: var(--blue); }
+  .olabel.on[data-i="2"] .nm, .olabel[data-i="2"]:hover .nm { color: var(--lilac); }
+  .olabel.on .nm, .olabel:hover .nm { text-decoration-thickness: 2px; }
+  .olabel:not(.on):not(:hover) .nm{color:#9E9991}
+  .olabel:not(.on):not(:hover){text-decoration-color:color-mix(in srgb,#9E9991 45%,transparent)}
+  .olabel .olsub{color:#B3AEA7!important}
+  :root[data-theme="dark"] .olabel:not(.on):not(:hover) .nm{color:#8A857E}
+  :root[data-theme="dark"] .olabel .olsub{color:#6F6A64!important}
 </style>
 </head>
 <body id="top">
@@ -395,9 +413,9 @@
     <div class="fallback" aria-hidden="true">🐙🐙🐙</div>
     <p class="stage-hint" aria-hidden="true">tap one</p>
     <div class="olabels">
-      <a class="olabel" href="#see" data-i="0" aria-label="Pedro, see no evil">Pedro</a>
-      <a class="olabel" href="#hear" data-i="1" aria-label="Diego, hear no evil">Diego</a>
-      <a class="olabel" href="#speak" data-i="2" aria-label="Juan, speak no evil">Juan</a>
+      <a class="olabel" href="#see" data-i="0" aria-label="Pedro, see no evil"><span class="nm">Pedro</span><span class="olsub">to help you see</span></a>
+      <a class="olabel" href="#hear" data-i="1" aria-label="Diego, hear no evil"><span class="nm">Diego</span><span class="olsub">to help you hear</span></a>
+      <a class="olabel" href="#speak" data-i="2" aria-label="Juan, speak no evil"><span class="nm">Juan</span><span class="olsub">to help you speak</span></a>
     </div>
   </div>
 
@@ -445,7 +463,7 @@
     </p>
 
     <p class="line">
-      Before Dubai, I applied to Qatar Airways. There was a long queue outside the hotel, going around like a snake, and I was in it, wearing a blazer and a skirt, along with more than 900 other candidates. I made it to the last 14, and then I was cut. A few days later, Emirates had an opening. There were about 100 of us that time, and I got in.
+      Before Dubai, I applied to Qatar Airways. There was a long queue outside the hotel, and I was in it, wearing a blazer and a skirt, along with more than 900 other candidates. I made it to the last 14, and then I was cut. A few days later, Emirates had an opening. There were about 100 of us that time, and I got in.
     </p>
 
     <p class="line">
@@ -461,12 +479,16 @@
     </p>
 
     <p class="line">
-      During the lockdown, I started <strong>Feelings Coffee</strong>, a box I wished existed. It was my first venture, right after my MBA. This time, the case study was live: real people, every department at once, and problems nobody could plan for.<a class="cite" id="r3" href="#building" data-tip="A Box of Feelings">4</a>
+      During the lockdown, I started <strong>Feelings Coffee</strong>, a box I wished existed. It was my first venture, right after my MBA. This time, the case study was live: real customers, me in every role, and the occasional curveball.<a class="cite" id="r3" href="#building" data-tip="A Box of Feelings">4</a>
       After that, I went back to teaching Tagalog, this time on YouTube, as a one-woman show.<a class="cite b" id="r4" href="#teaching" data-tip="Nakakapagpabagabag">5</a>
     </p>
 
     <p class="line">
-      I taught myself data storytelling before AI could do it for me,<a class="cite b" id="r9" href="#data" data-tip="712 Flights, 92 Airports, 60 Cities, 35 Countries">6</a> and I learned how to build websites. If I don't know how to do something, I figure it out.
+      I taught myself data storytelling before AI could do it for me,<a class="cite b" id="r9" href="#data" data-tip="712 Flights, 92 Airports, 60 Cities, 35 Countries">6</a> and I learned how to build websites.
+    </p>
+
+    <p class="line">
+      When I don't know how to do something, I do my best to figure it out.
     </p>
 
     <p class="line">
@@ -487,7 +509,7 @@
     <p class="help-in">AI can do a lot of the doing now. I believe what I bring is the way I see things, the way I listen, and the way I connect ideas and tell a story. Here's what that looks like if we work together.</p>
     <div class="help-grid">
       <article class="help-card" id="see" style="--c:var(--coral)">
-        <span class="who"><i></i>Pedro · see no evil</span>
+        <span class="who"><i></i>Pedro · to help you see</span>
         <h3>How I see</h3>
         <p>I look at things from a different angle, and I connect ideas from places that don't usually meet: an airplane cabin, a coffee bar, a surfboard workshop, a spreadsheet.</p>
         <p class="can-h">I can help you:</p>
@@ -499,7 +521,7 @@
         <ul class="tags"><li>Ideation</li><li>Campaign concepts</li><li>Product experience</li><li>Data storytelling</li></ul>
       </article>
       <article class="help-card" id="hear" style="--c:var(--blue)">
-        <span class="who"><i></i>Diego · hear no evil</span>
+        <span class="who"><i></i>Diego · to help you hear</span>
         <h3>How I listen</h3>
         <p>Flying taught me to read people from all over the world. Teaching Tagalog taught me to notice when someone is lost. Running a small business taught me that you can't read people's minds, so you have to listen.</p>
         <p class="can-h">I can help you:</p>
@@ -511,7 +533,7 @@
         <ul class="tags"><li>Customer insight</li><li>Cross-cultural communication</li><li>Research</li></ul>
       </article>
       <article class="help-card" id="speak" style="--c:var(--lilac)">
-        <span class="who"><i></i>Juan · speak no evil</span>
+        <span class="who"><i></i>Juan · to help you speak</span>
         <h3>How I speak</h3>
         <p>Storytelling is my day job. I write blogs, captions and campaigns, and I've been the one in front of the camera too.</p>
         <p class="can-h">I can help you:</p>
@@ -532,8 +554,8 @@
     <ol class="toc">
       <li class="ch" id="cultures"><a href="#cultures" aria-expanded="false" aria-controls="cultures-body"><span class="n">1</span><span class="t">Chicken or Beef?<span class="sub">Four years and five months as a flight attendant with Emirates Airlines.</span></span><span class="k">Emirates</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="cultures-body" hidden>
-    <p>Every flight, I worked with a different crew. My colleagues and passengers came from all over the world. I learned that the same words can mean different things depending on who's listening.</p>
-    <p>I learned about different aircraft, first aid and emergencies. I also learned a lot about myself. The person who left home and the person who came back to visit, on a layover or a holiday, was a different person every time.</p>
+    <p>Every flight, I worked with a different crew. My colleagues and passengers came from all over the world.</p>
+    <p>I learned about different aircraft, first aid and emergencies.</p>
     <ul class="tags"><li>Cross-cultural communication</li><li>Service</li><li>Reading people</li></ul>
         </div></li>
       <li class="ch" id="learning"><a href="#learning" aria-expanded="false" aria-controls="learning-body"><span class="n">2</span><span class="t">Sawdust<span class="sub">After flying, I wanted to try things I had never done.</span></span><span class="k">Gold Coast</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
@@ -557,6 +579,7 @@
     <p>I was talking to one of my Tagalog students at the time, and through him I learned about startups. He was the first person who believed in the idea. He said it had bones.</p>
     <p>This was right after my MBA. In school, problems came as case studies: one subject at a time, already in the past. Feelings Coffee was happening live. I was dealing with real people and juggling marketing, operations, finance, logistics and sourcing all at once. Some things were within my control, and some weren't, like delayed deliveries, supplier problems, or something I had never faced before.</p>
     <p>At first, it was all me. Then I learned to work with an illustrator: delegating, communicating, figuring out my strengths and weaknesses. It was a good learning experience.</p>
+    <p>The boxes still live on <a class="inline" href="https://www.instagram.com/feelingscoffee/" target="_blank" rel="noopener">Instagram</a>.</p>
     <ul class="tags"><li>Brand building</li><li>Copywriting</li><li>Visual direction</li><li>Customer experience</li></ul>
         </div></li>
       <li class="ch" id="teaching"><a href="#teaching" aria-expanded="false" aria-controls="teaching-body"><span class="n">5</span><span class="t">Nakakapagpabagabag<span class="sub">Teaching Tagalog on YouTube.</span></span><span class="k">Tagalog</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
@@ -568,7 +591,7 @@
         <div class="ch-body" id="data-body" hidden>
     <p>One of the first stories I told with data was my own: how much did I travel as cabin crew?</p>
     <div class="stats" role="list">
-      <div class="stat big" role="listitem"><b>53</b><span>months</span></div>
+      <div class="stat big" role="listitem"><b>4.4</b><span>years</span></div>
       <div class="stat" role="listitem"><b>712</b><span>flights</span></div>
       <div class="stat" role="listitem"><b>92</b><span>airports</span></div>
       <div class="stat" role="listitem"><b>60</b><span>cities</span></div>
@@ -576,6 +599,13 @@
       <div class="stat" role="listitem"><b>5</b><span>continents</span></div>
     </div>
     <p>AI can draw a chart in seconds now. But data only lands when people can understand it, so how you present it matters as much as the data itself.</p>
+    <p>I made the dashboards below in Tableau, before AI could build them. I cleaned the data, looked for the patterns and decided what to show.</p>
+    <p class="work-h">See the dashboards</p>
+    <ul class="work">
+      <li><a href="https://public.tableau.com/app/profile/valerie.chaneco/viz/CabinCrewTravel/Dashboard1" target="_blank" rel="noopener"><b>Cabin crew travel</b><span>The numbers above, as a full dashboard</span></a></li>
+      <li><a href="https://public.tableau.com/app/profile/valerie.chaneco/viz/MyCoffeeConsumptionFor28Days/Dashboard13" target="_blank" rel="noopener"><b>My coffee consumption for 28 days</b><span>A personal dataset, 28 days long</span></a></li>
+      <li><a href="https://public.tableau.com/app/profile/valerie.chaneco/viz/AmazonSales_16949206023280/Dashboard1" target="_blank" rel="noopener"><b>Amazon sales</b><span>A business dataset, visualized</span></a></li>
+    </ul>
     <p>I also learned how to build websites with WordPress and Framer. I built one for someone who became my mentor, and then I worked with her. She called me her “everything,” because I did a bit of everything in my job at the time. She said, “I don't expect you to know everything, but I expect you to figure things out.” That's something I still do.</p>
     <ul class="tags"><li>Data storytelling</li><li>Data visualization</li><li>WordPress</li><li>Framer</li></ul>
         </div></li>
@@ -585,16 +615,16 @@
         </div></li>
       <li class="ch" id="lab"><a href="#lab" aria-expanded="false" aria-controls="lab-body"><span class="n">8</span><span class="t">The Key of Ibong Adarna<span class="sub">If you have the key, you can unlock many doors.</span></span><span class="k">Keychain Studio</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="lab-body" hidden>
-    <p>Keychain Studio has a few keys. It also has three octopus keychains for 3D printing: see no evil, hear no evil and speak no evil, with octopuses instead of the three wise monkeys.</p>
+    <p><a class="inline" href="https://valchaneco.github.io/website/keychain-studio/" target="_blank" rel="noopener">Keychain Studio</a> has a few keys. It also has three octopus keychains for 3D printing: see no evil, hear no evil and speak no evil, with octopuses instead of the three wise monkeys.</p>
     <p>I'm fascinated by octopuses. They have three hearts, blue blood and nine brains. They're so different, and that resonates with me. I've never really felt like I belonged anywhere, not even in my own family. That's not meant to sound dramatic. It's just the feeling of being different.</p>
     <p>It started with a visual idea: the octopuses turning gray. That reminded me of the Ibong Adarna, whose songs put you to sleep before it turns you to stone. There's a story behind the keychains, but I'm still in the process of writing it.</p>
-    <p>I built a little studio to preview the colors and finishes before printing. I made it by experimenting with whatever tools I had, AI included. Drag to spin them.</p>
+    <p>I built a little studio to preview the colors and finishes before printing. I made it by experimenting with AI. Drag to spin them.</p>
     <div class="lab-stage" id="lab-stage" aria-label="Interactive 3D view of the three octopus keychains"></div>
     <p class="caption">See no evil · Hear no evil · Speak no evil</p>
         </div></li>
       <li class="ch" id="thinking"><a href="#thinking" aria-expanded="false" aria-controls="thinking-body"><span class="n">9</span><span class="t">Dear Mom<span class="sub">This is a letter to my mom. It isn't finished yet.</span></span><span class="k">A letter home</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
         <div class="ch-body" id="thinking-body" hidden>
-    <p>This section is my anchor, something I want to keep coming back to. As cheesy as it sounds, it's like a lighthouse.</p>
+    <p>This section is my anchor, something I want to keep coming back to.</p>
     <p>I'd like to think my mom was the first person who loved me and the first person I loved, my first connection to this world, literally and figuratively. That story, the one I choose to believe, keeps me grounded. I know I've changed over the years, and I'll keep changing. But some things are worth keeping the same, and I don't want to lose sight of that.</p>
     <div class="letter">
       <p>Dear Mom,</p>
@@ -965,35 +995,35 @@
       // a little gallery: dark stage, one spotlight from above on each keychain, soft cones and real shadows
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      scene.children.filter(c => c.isLight).forEach(l => { l.intensity *= 0.3; });
+      scene.children.filter(c => c.isLight).forEach(l => { l.intensity *= 0.18; });
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.55 }));
       floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
       const glowTex = (() => {
         const c = document.createElement('canvas'); c.width = c.height = 128;
         const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 2, 64, 64, 62);
-        g.addColorStop(0, 'rgba(255,244,225,.55)'); g.addColorStop(1, 'rgba(255,244,225,0)');
+        g.addColorStop(0, 'rgba(255,244,225,.85)'); g.addColorStop(.62, 'rgba(255,244,225,.5)'); g.addColorStop(.85, 'rgba(255,244,225,.12)'); g.addColorStop(1, 'rgba(255,244,225,0)');
         x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
       })();
       const coneMat = new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
         uniforms: { h: { value: 190 } },
         vertexShader: 'varying float vY; varying vec3 vN; varying vec3 vV; uniform float h; void main(){ vY = position.y / h + 0.5; vec4 mv = modelViewMatrix * vec4(position,1.); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }',
-        fragmentShader: 'varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float edge = pow(abs(dot(vN, vV)), 2.0); float a = 0.11 * edge * smoothstep(0.02, 0.3, vY) * (1.0 - smoothstep(0.6, 0.95, vY)); gl_FragColor = vec4(vec3(1.0,0.96,0.88), a); }',
+        fragmentShader: 'varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float edge = pow(abs(dot(vN, vV)), 1.5); float a = 0.2 * edge * (0.4 + 0.6 * vY) * smoothstep(0.0, 0.06, vY); gl_FragColor = vec4(vec3(1.0,0.96,0.88), a); }',
       });
       items.forEach((it) => {
         it.mesh.castShadow = true;
         it.mesh.material.envMapIntensity = 0.45;
         it.shadow.visible = false;
         const x = it.holder.position.x;
-        const spot = new THREE.SpotLight(0xfff3e0, 6, 0, 0.2, 0.6, 0);
+        const spot = new THREE.SpotLight(0xfff3e0, 9, 0, 0.17, 0.45, 0);
         spot.position.set(x, 130, 10); spot.target.position.set(x, 0, 0);
         spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0004;
         spot.shadow.camera.near = 40; spot.shadow.camera.far = 220;
         scene.add(spot, spot.target);
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(21, 190, 64, 24, true), coneMat);
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(19, 190, 64, 24, true), coneMat);
         cone.position.set(x, 95, 2);   // tip far above the frame, wide end on the floor
         scene.add(cone);
-        const pool = new THREE.Mesh(new THREE.PlaneGeometry(46, 46), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+        const pool = new THREE.Mesh(new THREE.PlaneGeometry(42, 42), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
         pool.rotation.x = -Math.PI / 2; pool.position.set(x, 0.1, 1); scene.add(pool);
       });
     }
@@ -1136,11 +1166,12 @@
     const t = clock.getElapsedTime(), dt = Math.min(t - last, 0.05); last = t;
 
     if (story.isVisible()) {
-      // At rest the two covering arms lie on the ground with the others; in focus they reach up
-      // to the eyes, ears or mouth, and go back down when you let go.
+      // At rest the two covering arms are up over the eyes, ears or mouth; in focus they come
+      // down to the ground, and go back up when you let go.
       story.items.forEach((it, i) => {
-        const target = i === hovered ? 1 : 0;
-        it.p = it.p === undefined ? 0 : it.p;
+        // at rest they cover their eyes, ears and mouth; the one you pick lowers its arms
+        const target = i === hovered ? 0 : 1;
+        it.p = it.p === undefined ? 1 : it.p;
         it.p += Math.sign(target - it.p) * Math.min(Math.abs(target - it.p), dt / (reduce ? 0.001 : 1.1));
         const e = easeInOut(it.p);
         if (it.lastE !== e) { it.octo.update(e); it.lastE = e; }
