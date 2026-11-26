@@ -12,7 +12,7 @@
 <meta property="og:image" content="https://valchaneco.github.io/website/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Three octopuses covering their eyes, ears and mouth, with the line: Three octopuses, three ways I can help.">
+<meta property="og:image:alt" content="Need an extra hand? Some ideas never get seen, heard or understood. I help with all three. Three octopuses covering their eyes, ears and mouth.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://valchaneco.github.io/website/og.png">
 <meta name="theme-color" content="#FFFFFF">
@@ -314,8 +314,7 @@
   .help>h2{font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:var(--ink)}
   .help .help-in{color:var(--muted);max-width:52ch;margin:12px 0 26px;font-size:1.05rem;line-height:1.5}
   .help-grid{display:grid;gap:14px}
-  @media (min-width:860px){.help-grid{grid-template-columns:repeat(3,1fr);width:min(1000px,calc(100vw - 48px));position:relative;left:50%;transform:translateX(-50%)}}
-  .help-card .tags li{white-space:nowrap}
+  @media (min-width:860px){.help-grid{grid-template-columns:repeat(3,1fr)}}
   .help-card{border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;background:var(--soft);scroll-margin-top:96px;transition:border-color .4s ease}
   .help-card:target{border-color:var(--c)}
   .help-card .who{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:var(--muted)}
@@ -324,8 +323,8 @@
   .help-card p{font-size:.98rem;line-height:1.5;margin-bottom:10px}
   .help-card .can-h{font-size:.82rem;font-weight:700;color:var(--ink);margin:14px 0 6px}
   .help-card ul.can{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:7px}
-  .help-card ul.can li{position:relative;padding-left:18px;font-size:.95rem;line-height:1.4}
-  .help-card ul.can li::before{content:"";position:absolute;left:0;top:.6em;width:9px;height:2px;border-radius:2px;background:var(--c)}
+  .help-card ul.can li{position:relative;padding-left:14px;font-size:.95rem;line-height:1.4}
+  .help-card ul.can li::before{content:"";position:absolute;left:0;top:.66em;width:6px;height:2px;border-radius:2px;background:var(--c)}
   .help-card .tags{margin-bottom:0}
   .help-cta{margin-top:22px;font-weight:600}
   .help-cta a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:4px}
@@ -460,9 +459,8 @@
 .edu,footer{color:#BCB7AF}
 :root[data-theme="dark"] .edu,:root[data-theme="dark"] footer{color:#605C57}
 .pull blockquote,.pull figcaption{transition:opacity .25s ease}.pull.swapping blockquote,.pull.swapping figcaption{opacity:0}.pull.secret{cursor:default}
-@keyframes hintPulse{0%,100%{opacity:1}50%{opacity:.3}}
-.pull.secret::before{animation:hintPulse 3.2s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.pull.secret::before{animation:none!important}}
+:root[data-theme="dark"] .pull blockquote{color:#D9D4CC}
+:root[data-theme="dark"] .pull figcaption{color:#ABA59C}
 </style>
 </head>
 <body id="top">
@@ -518,7 +516,7 @@
           <li>Talk to people across cultures</li>
           <li>Figure out the real problem before jumping to a solution</li>
         </ul>
-        <ul class="tags"><li>Customer insight</li><li>Cross-cultural communication</li><li>Research</li></ul>
+        <ul class="tags"><li>Customer insight</li><li>Cross-cultural</li><li>Research</li></ul>
       </article>
       <article class="help-card" id="speak" style="--c:var(--lilac)">
         <span class="who"><i></i>Juan speaks</span>
