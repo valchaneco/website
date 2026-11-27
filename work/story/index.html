@@ -766,6 +766,10 @@
 .plane .pl-split{margin:6px 0!important;font-size:.74rem!important;color:var(--muted)!important}
 .plane .pl-note{margin:0!important;font-size:.82rem!important;line-height:1.45;color:var(--ink)!important}
 .planes .note{padding:0!important;margin:8px 0 0!important;font-size:.8rem!important;color:var(--muted)!important;line-height:1.45}
+/* one frame for both views: the globe and the map share the same box, so switching only morphs the picture */
+.rm-globe,.rm-globe.is-map{max-width:100%;aspect-ratio:16/10;transition:none}
+.rm-globe canvas,.rm-globe.is-map canvas{border-radius:18px}
+@media (max-width:560px){.rm-globe,.rm-globe.is-map{aspect-ratio:1/0.92}}
 </style>
 </head>
 <body id="top">
@@ -1915,7 +1919,7 @@ if (el) {
   // view: globe or map
   let mapMode = false, fl = 0, fe = 0;
   const viewBtns = [...el.querySelectorAll('.rm-view button')];
-  const setView = (m) => { mapMode = m; el.classList.toggle('is-map', m); viewBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.v === 'map') === m))); distGoal = m ? 2.7 : 4.3; if (m) goal.lon = ((goal.lon + 540) % 360) - 180; idleAt = performance.now(); };
+  const setView = (m) => { mapMode = m; el.classList.toggle('is-map', m); viewBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.v === 'map') === m))); distGoal = m ? 2.7 : G0(); if (m) goal.lon = ((goal.lon + 540) % 360) - 180; idleAt = performance.now(); };
   viewBtns.forEach(b => b.addEventListener('click', () => setView(b.dataset.v === 'map')));
   const zoomRange = () => mapMode ? [1.1, playing ? 4.2 : 2.7] : [2.4, 5.2];
   const clampZ = (z) => { const [a, b] = zoomRange(); return Math.max(a, Math.min(b, z)); };
@@ -1980,7 +1984,8 @@ if (el) {
   const clearCity = () => { if (!selCity) return; selCity = ''; if (!playing) setAllRoutes(1); };
   showCountry('');
   const view = { lat: 6, lon: 108 }, goal = { lat: 6, lon: 108 };
-  let dist = 4.3, distGoal = 4.3, idleAt = -1e9;
+  const G0 = () => (el.clientWidth < 500 ? 4.9 : 4.3);
+  let dist = G0(), distGoal = G0(), idleAt = -1e9;
   const focus = (la, lo, z) => { goal.lat = mapMode ? la : Math.max(-50, Math.min(50, la * 0.8)); goal.lon = lo; distGoal = clampZ(mapMode ? z - 1.4 : z); idleAt = performance.now() + 6000; };
   el.querySelectorAll('.rm-zoom button').forEach(b => b.addEventListener('click', () => { distGoal = clampZ(distGoal + (+b.dataset.z) * (mapMode ? 0.45 : 0.6)); }));
   const layers = { countries: hl, cities: cityG, flights: flightsG };
@@ -2111,7 +2116,7 @@ if (el) {
     const rl = Object.entries(reg).sort((x, y) => y[1] - x[1]), rm = rl.length ? rl[0][1] : 1;
     document.getElementById('bars-reg').innerHTML = rl.map(([k, v]) => '<li><button type="button" data-reg="' + k + '"><span class="nm">' + k + '</span><span class="br"><i style="width:' + Math.max(6, v / rm * 100) + '%"></i></span><span class="v">' + v + '</span></button></li>').join('') || '<li class="empty">Nothing to show.</li>';
     if (move && c) focus(list.reduce((t, a) => t + a[3], 0) / list.length, list.reduce((t, a) => t + a[4], 0) / list.length, 3.3);
-    if (move && !c) distGoal = mapMode ? 2.7 : 4.3;
+    if (move && !c) distGoal = mapMode ? 2.7 : G0();
     if (!cityG.visible) { cityG.visible = true; const b = document.querySelector('.rm-layers [data-l="cities"]'); if (b) b.setAttribute('aria-pressed', 'true'); }
   }
   (() => { const mx = Math.max(...HOURS); document.getElementById('hours').innerHTML = HOURS.map((v, h) => '<i data-h="' + h + '" role="button" tabindex="0" aria-label="' + v + ' flights left Dubai at ' + h + ':00" style="height:' + Math.max(3, v / mx * 100) + '%"></i>').join('');
@@ -2149,7 +2154,7 @@ if (el) {
     comets.forEach(c => { cometG.remove(c.m); }); comets.length = 0; flash.clear(); fading = [];
     cityDots.forEach(d => { d.material.transparent = false; d.material.opacity = 1; d.children[0].material = ringM; });
     setAllRoutes(1); applyFilter(false); paintHL();
-    distGoal = mapMode ? 2.7 : 4.3;
+    distGoal = mapMode ? 2.7 : G0();
     hint.textContent = done ? 'That was all 712 flights, from 2008 to 2013.' : (dnOn ? DN_NOTE : hint0); clearTimeout(endTimer); if (done) endTimer = setTimeout(() => { if (!playing) hint.textContent = dnOn ? DN_NOTE : hint0; }, 6000);
   }
   function startPlay() {
@@ -2204,7 +2209,7 @@ if (el) {
     view.lon += dl * k; view.lat += (goal.lat - view.lat) * k;
     if (mapMode && Math.abs(view.lon) > 180) view.lon = ((view.lon + 540) % 360) - 180;
     dist += (distGoal - dist) * k; camera.position.z = dist;
-    fl += ((mapMode ? 1 : 0) - fl) * Math.min(1, dt * (reduce ? 60 : 3.2)); if (Math.abs(fl - (mapMode ? 1 : 0)) < 0.002) fl = mapMode ? 1 : 0;
+    { const tg = mapMode ? 1 : 0, st = reduce ? 1 : dt / 1.3; fl = tg > fl ? Math.min(tg, fl + st) : Math.max(tg, fl - st); }
     fe = fl * fl * (3 - 2 * fl); U.uFlat.value = fe; placePins(fe);
     let ry = -(view.lon * R + Math.PI / 2); ry = ((ry + Math.PI) % TAU + TAU) % TAU - Math.PI;
     outer.rotation.x = view.lat * R * (1 - fe) + TILT * fe; inner.rotation.y = ry * (1 - fe);
