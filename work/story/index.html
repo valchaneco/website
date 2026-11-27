@@ -959,22 +959,44 @@
   // when a phone's silent switch is on.
   (() => {
     const btn = document.querySelector('.sound-toggle'); if (!btn) return;
-    const SR = 44100, LEN = 30, FADE = 3;
+    const SR = 44100, FADE = 3;
     const players = [new Audio(), new Audio()];
     players.forEach(p => { p.preload = 'auto'; p.addEventListener('timeupdate', tick); p.addEventListener('ended', () => { if (on && players[cur] === p) { p.currentTime = 0; p.play().catch(() => {}); } }); });
     let cur = 0, on = false, ready = null, timer, vfade;
     function render() {
-      const N = SR * LEN, F = SR * FADE, OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-      const oc = new OC(1, N, SR), wb = oc.createBuffer(1, N, SR), d = wb.getChannelData(0);
-      for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
-      const src = oc.createBufferSource(); src.buffer = wb;
-      const f = (type, freq, g, q) => { const n = oc.createBiquadFilter(); n.type = type; n.frequency.value = freq; if (g != null) n.gain.value = g; if (q) n.Q.value = q; return n; };
-      src.connect(f('highpass', 30)).connect(f('lowshelf', 220, 10)).connect(f('peaking', 3200, -9, 0.7)).connect(f('highshelf', 9000, 2)).connect(f('lowpass', 11000)).connect(oc.destination);
-      src.start();
-      return oc.startRendering().then(r => {
-        const x = r.getChannelData(0); let peak = 0;
+      // Real gray noise: random noise whose loudness at each pitch follows the inverse of the
+      // ISO 226 equal-loudness curve at 40 phon (quiet listening), so every pitch sounds equally loud.
+      // Built in the frequency domain, so the clip also loops without a seam.
+      const N = 1 << 20, F = SR * FADE;
+      const ISO = [[20,99.85],[25,93.94],[31.5,88.17],[40,82.63],[50,77.78],[63,73.08],[80,68.48],[100,64.37],[125,60.59],[160,56.7],[200,53.41],[250,50.4],[315,47.58],[400,44.98],[500,43.05],[630,41.34],[800,40.06],[1000,40.01],[1250,41.82],[1600,42.51],[2000,39.23],[2500,36.51],[3150,35.61],[4000,36.65],[5000,40.01],[6300,45.83],[8000,51.8],[10000,54.28],[12500,51.49]];
+      const gain = fr => {
+        if (fr < 30) return 0;                       // nothing below hearing's useful range
+        const lf = Math.log(Math.max(fr, 40));        // keep the deep end from turning into a rumble
+        let db = ISO[ISO.length - 1][1];
+        for (let i = 1; i < ISO.length; i++) { const [f0, l0] = ISO[i - 1], [f1, l1] = ISO[i];
+          if (fr <= f1) { const t = (lf - Math.log(f0)) / (Math.log(f1) - Math.log(f0)); db = l0 + (l1 - l0) * Math.max(0, Math.min(1, t)); break; } }
+        let a = Math.pow(10, (db - 40) / 20);
+        if (fr > 11000) a *= Math.exp(-(fr - 11000) / 2500); // soft top so it never hisses
+        return a;
+      };
+      const re = new Float64Array(N), im = new Float64Array(N);
+      for (let k = 1; k < N / 2; k++) {
+        const a = gain(k * SR / N), ph = Math.random() * 2 * Math.PI;
+        re[k] = a * Math.cos(ph); im[k] = a * Math.sin(ph); re[N - k] = re[k]; im[N - k] = -im[k];
+      }
+      // in-place inverse FFT
+      for (let i = 1, j = 0; i < N; i++) { let b = N >> 1; for (; j & b; b >>= 1) j ^= b; j ^= b;
+        if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
+      for (let len = 2; len <= N; len <<= 1) {
+        const ang = 2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang), h2 = len >> 1;
+        for (let i = 0; i < N; i += len) { let cr = 1, ci = 0;
+          for (let j = 0; j < h2; j++) { const u = i + j, v = u + h2, xr = re[v] * cr - im[v] * ci, xi = re[v] * ci + im[v] * cr;
+            re[v] = re[u] - xr; im[v] = im[u] - xi; re[u] += xr; im[u] += xi; const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t; } }
+      }
+      return Promise.resolve().then(() => {
+        const x = re; let peak = 0;
         for (let i = 0; i < N; i++) peak = Math.max(peak, Math.abs(x[i]));
-        const k = 0.35 / peak, pcm = new Int16Array(N);
+        const k = 0.16 / peak, pcm = new Int16Array(N);
         for (let i = 0; i < N; i++) {
           let g = 1;
           if (i < F) g = Math.sin((i / F) * Math.PI / 2); else if (i > N - F) g = Math.sin(((N - i) / F) * Math.PI / 2);
@@ -1013,7 +1035,7 @@
       }
       set(true);
       if (!players[0].src) await prep();
-      players.forEach(p => { try { p.volume = 1; } catch (e) {} });
+      players.forEach(p => { try { p.volume = 0; } catch (e) {} });
       const p = players[cur], q = players[1 - cur];
       // Phones only let a player start later if it was started once during a tap,
       // so briefly start and stop the second player now, silently.
@@ -1021,6 +1043,8 @@
       try { if (!p.currentTime || p.ended) p.currentTime = 0; await p.play(); p._unlocked = true; }
       catch (e) { console.warn('noise', e); set(false); return; }
       timer = setInterval(tick, 200);
+      const t1 = performance.now();
+      vfade = setInterval(() => { const k = Math.min(1, (performance.now() - t1) / 2500); players.forEach(x => { try { x.volume = k * k; } catch (e) {} }); if (k >= 1) clearInterval(vfade); }, 40);
     });
   })();
 
