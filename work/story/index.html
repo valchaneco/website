@@ -619,8 +619,8 @@
 .kv{border:1px solid var(--line);border-radius:12px;background:var(--soft);padding:10px 8px;text-align:center}
 .kv b{display:block;font-size:1.05rem;font-weight:800;color:var(--ink);letter-spacing:-0.02em}
 .kv span{display:block;font-size:.7rem;color:var(--muted);margin-top:2px;line-height:1.25}
-.hours{display:flex;align-items:flex-end;gap:2px;height:70px}
-.hours i{flex:1;background:color-mix(in srgb,var(--green) 45%,var(--paper));border-radius:2px 2px 0 0;min-height:2px}
+.hours{display:flex;align-items:flex-end;gap:2px;height:70px;margin-top:22px}
+.hours i{flex:1;background:color-mix(in srgb,var(--green) 32%,var(--paper));border-radius:2px 2px 0 0;min-height:2px}
 .hours i[data-h="3"],.hours i[data-h="7"],.hours i[data-h="8"],.hours i[data-h="9"],.hours i[data-h="10"]{background:var(--green)}
 .hours-ax{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:4px}
 .route.dash{margin-top:72px;padding-top:40px;border-top:1px solid var(--line)}
@@ -731,6 +731,13 @@
 .rm-cities li:has(.rm-chip){padding:0}
 .rm-chip{border:0;background:none;font:inherit;color:inherit;padding:2px 8px;cursor:pointer;border-radius:999px}
 .rm-chip:hover{text-decoration:underline;text-underline-offset:2px}
+/* tapped-place card: sit above the date/clock HUD and clear of the zoom buttons */
+.rm-globe .rm-card,.rm-globe.dn .rm-card{bottom:calc(8px + var(--hud,0px))!important;max-height:min(46%,calc(100% - 76px - var(--hud,0px)))}
+.rm-globe:not(.is-map) .rm-card{width:min(calc(100% - 112px),340px)}
+@media (max-width:560px){.rm-globe:not(.is-map) .rm-card{width:min(calc(100% - 112px),300px)}}
+#hours.pm i{background:color-mix(in srgb,var(--green) 22%,var(--paper))}
+#hours.pm i.pick{background:var(--green)}
+.dash-grid .panel:has(#bars-lay){margin-top:16px}
 .wop{position:fixed;left:14px;bottom:14px;z-index:40;font:500 12px/1 "Inter Tight",sans-serif;color:var(--muted);text-decoration:none;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:.7;transition:opacity .2s ease,color .2s ease}
 .wop:hover,.wop:focus-visible{opacity:1;color:var(--ink);outline:none}
 #travel{scroll-margin-top:84px}
@@ -773,7 +780,7 @@
 @media (max-width:560px){.rm-globe,.rm-globe.is-map{aspect-ratio:1/0.92}}
 .toc .t .sub{display:none!important}
 /* chart bars: only the longest is dark */
-.bars .br i{background:color-mix(in srgb,var(--green) 45%,var(--paper))}
+.bars .br i{background:color-mix(in srgb,var(--green) 32%,var(--paper))}
 .bars li.max .br i,.bars li.max button .br i{background:var(--green)}
 </style>
 </head>
@@ -864,7 +871,7 @@
     </p>
 
     <p class="line">
-      The three octopuses on my front page started as keychains I designed for 3D printing. The rest of the story is on the map below.
+      The rest of the story is on the map below.
     </p>
   </article>
 
@@ -940,7 +947,6 @@
 
   <section class="col" id="contact">
     <div class="contact reveal">
-      <span class="eyebrow">The end, for now</span>
       <h2>Let's write the next chapter</h2>
       <p>Have a brand, a story or a project in mind? Say hi.</p>
       <div class="links">
@@ -2080,7 +2086,8 @@ if (el) {
   }
   document.querySelector('.dash-grid').addEventListener('click', e => {
     const y = e.target.closest('button[data-year]'), g = e.target.closest('button[data-reg]'), h = e.target.closest('#hours i[data-h]');
-    if (y) { const f = FACTS.Y[y.dataset.year]; if (!f) return; detail(y.closest('.panel'), y, y.dataset.year, [f.n + ' flights, about ' + f.h.toLocaleString() + ' hours in the air.', (f.new ? f.new + ' airports I had never landed in before. ' : '') + 'Busiest month: ' + f.mo[0] + ', with ' + f.mo[1] + ' flights.', 'Where I flew most: ' + andList(f.top.map(nameOf)) + '.']); }
+    if (y && (selC.value || +selM.value)) { const n = +y.dataset.n, lb = !selC.value ? 'the places shown' : selC.value.startsWith('r:') ? selC.value.slice(2) : selC.value; detail(y.closest('.panel'), y, y.dataset.year, [n ? n + (n === 1 ? ' flight' : ' flights') + ' landed in ' + lb + ' in ' + y.dataset.year + '.' : 'No flights to ' + lb + ' in ' + y.dataset.year + '.']); }
+    else if (y) { const f = FACTS.Y[y.dataset.year]; if (!f) return; detail(y.closest('.panel'), y, y.dataset.year, [f.n + ' flights, about ' + f.h.toLocaleString() + ' hours in the air.', (f.new ? f.new + ' airports I had never landed in before. ' : '') + 'Busiest month: ' + f.mo[0] + ', with ' + f.mo[1] + ' flights.', 'Where I flew most: ' + andList(f.top.map(nameOf)) + '.']); }
     else if (g) { const r = g.dataset.reg, cs = AIRPORTS.filter(a => a[0] !== 'DXB' && regOf(a[2]) === r).sort((p, q) => q[5] - p[5]); const n = new Set(cs.map(a => a[2])).size;
       detail(g.closest('.panel'), g, r, [plural(cs.length, 'airport') + ' in ' + plural(n, 'country').replace('countrys', 'countries') + '.', 'Most landings: ' + andList(cs.slice(0, 3).map(a => a[1] + ' (' + a[5] + ')')) + '.'], ['Show ' + r + ' on the map', () => { setWhere('r:' + r); scrollToGlobe(); }]); }
     else if (h) { const k = +h.dataset.h, top = FACTS.H[k] || []; detail(h.closest('.panel'), h, h12(k) + ' departures', [HOURS[k] + (HOURS[k] === 1 ? ' flight' : ' flights') + ' left Dubai around ' + h12(k) + '.', top.length ? 'Mostly to ' + andList(top.map(nameOf)) + '.' : '']); }
@@ -2105,6 +2112,20 @@ if (el) {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { openMenu(false); layersOpen(false); } });
   const selM = document.getElementById('rm-min'), result = document.querySelector('.rm-result');
   const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+  // every landing with its year, from the playback data (matches the airport landing counts and the flights per year)
+  let LEGS = null; const legs = () => LEGS || (LEGS = PLAY.map(([t, ri, rev]) => { const r = ROUTES[ri]; let to = rev ? r[0] : r[1]; if (t === 405.43 && ri === 55) to = 'CCJ'; return [new Date(Date.UTC(2008, 10, 1) + t * 864e5).getUTCFullYear(), to]; }));
+  const YEAR_LIST = YEARS.map(y => y[0]), HOURS_NOTE = document.querySelector('#hours').closest('.panel').querySelector('.note'), HOURS_NOTE0 = HOURS_NOTE.textContent;
+  const CABIN_NOTE = document.querySelector('.cabin-split').closest('.panel').querySelector('.note');
+  const yearBars = (counts) => { const mx = Math.max(1, ...counts); document.getElementById('bars-year').innerHTML = YEAR_LIST.map((y, i) => '<li><button type="button" data-year="' + y + '" data-n="' + counts[i] + '"><span class="nm">' + y + '</span><span class="br"><i style="width:' + (counts[i] ? Math.max(6, counts[i] / mx * 100) : 0) + '%"></i></span><span class="v">' + counts[i] + '</span></button></li>').join(''); };
+  function followPlace(list, label, filtered, placeChosen) {
+    const codes = new Set(list.map(a => a[0])), counts = filtered ? YEAR_LIST.map(y => legs().filter(l => l[0] === y && codes.has(l[1])).length) : null;
+    yearBars(filtered ? counts : YEARS.map(y => y[1]));
+    const hr = {}; if (placeChosen) list.forEach(a => { const f = FACTS.A[a[0]]; if (f && f.hr !== null && f.hr !== undefined && a[0] !== 'DXB') hr[f.hr] = (hr[f.hr] || 0) + a[5]; });
+    const top = Object.entries(hr).sort((x, y) => y[1] - x[1]).slice(0, 3).map(e => +e[0]).sort((x, y) => x - y), hrs = document.getElementById('hours');
+    hrs.classList.toggle('pm', top.length > 0); hrs.querySelectorAll('i').forEach(i => i.classList.toggle('pick', top.includes(+i.dataset.h)));
+    HOURS_NOTE.textContent = top.length ? 'Flights to ' + label + ' most often left Dubai around ' + andList(top.map(h12)) + '. The bars show all my flights.' : HOURS_NOTE0;
+    CABIN_NOTE.hidden = false; CABIN_NOTE.dataset.all = CABIN_NOTE.dataset.all || CABIN_NOTE.textContent; CABIN_NOTE.textContent = placeChosen ? 'This is across all my flights, not by place.' : CABIN_NOTE.dataset.all;
+  }
   function applyFilter(move) {
     const c = selC.value, min = +selM.value, isR = c.startsWith('r:'), rn = c.slice(2), inW = (country) => !c || (isR ? regOf(country) === rn : country === c);
     const list = AIRPORTS.filter(a => a[5] >= min && inW(a[2]));
@@ -2120,6 +2141,7 @@ if (el) {
     const reg = {}; list.forEach(a => { if (a[0] !== 'DXB' && REGION[a[2]]) reg[REGION[a[2]]] = (reg[REGION[a[2]]] || 0) + a[5]; });
     const rl = Object.entries(reg).sort((x, y) => y[1] - x[1]), rm = rl.length ? rl[0][1] : 1;
     document.getElementById('bars-reg').innerHTML = rl.map(([k, v]) => '<li><button type="button" data-reg="' + k + '"><span class="nm">' + k + '</span><span class="br"><i style="width:' + Math.max(6, v / rm * 100) + '%"></i></span><span class="v">' + v + '</span></button></li>').join('') || '<li class="empty">Nothing to show.</li>';
+    followPlace(list, !c ? 'all places' : isR ? rn : c, !!c || min > 0, !!c);
     if (move && c) focus(list.reduce((t, a) => t + a[3], 0) / list.length, list.reduce((t, a) => t + a[4], 0) / list.length, 3.3);
     if (move && !c) distGoal = mapMode ? 2.7 : G0();
     if (!cityG.visible) { cityG.visible = true; const b = document.querySelector('.rm-layers [data-l="cities"]'); if (b) b.setAttribute('aria-pressed', 'true'); }
@@ -2286,6 +2308,11 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false)
 <script>
 (function(){function mark(ol){var best=null,bw=-1;ol.querySelectorAll('li').forEach(function(li){li.classList.remove('max');var i=li.querySelector('.br i');if(!i)return;var w=parseFloat(i.style.width)||0;if(w>bw){bw=w;best=li}});if(best)best.classList.add('max')}
 document.querySelectorAll('ol.bars').forEach(function(ol){mark(ol);new MutationObserver(function(){mark(ol)}).observe(ol,{childList:true})})})();
+</script>
+<script>
+(function(){var g=document.getElementById('rm-globe'),h=g&&g.querySelector('.rm-hud');if(!g||!h||!window.ResizeObserver)return;
+function u(){var x=Math.ceil(h.getBoundingClientRect().height);g.style.setProperty('--hud',x?(x+8)+'px':'0px')}
+new ResizeObserver(u).observe(h);u();})();
 </script>
 </body>
 </html>
